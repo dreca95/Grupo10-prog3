@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mascotero</title>
+
+    <link rel="stylesheet" href="/css/estilos.css">
+
+</head>
+
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+        <h2>Bienvenido</h2>
+        <form action="/productos" method="GET">
+            <label>Ingresá tu nombre:</label><br>
+            <input type="text" name="nombre" required><br>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+
+</body>
+
+</html>
