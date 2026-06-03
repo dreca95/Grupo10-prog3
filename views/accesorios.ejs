@@ -35,6 +35,19 @@
                         </div>
                         <% }) %>
                 </div>
+
+                <div class="pagination">
+                    <% if (page> 1) { %>
+                        <a href="?page=<%= page - 1 %>" class=""><span>Anterior</span></a>
+                        <% } else { %>
+                            <a href="#" class="disabled"><span>Anterior</span></a>
+                            <% } %>
+
+                                <span>Página <%= page %></span>
+
+                                <a href="?page=<%= page + 1 %>">Siguiente</a>
+                </div>
+
                 <% } else { %>
                     <p>No hay productos.</p>
                     <% } %>

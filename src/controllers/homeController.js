@@ -1,3 +1,4 @@
+const CANT_PRODUCTOS = 10;
 
 /*JSON DE PRUEBA*/
 const productsData = {
@@ -49,14 +50,40 @@ const productsData = {
 
 const homeController = {
     productos: (req, res) => res.render("productos"),
+
     comida: (req, res) => {
-        const productos = productsData.comida;
-        return res.render("comida", { productos });
+
+        const page = Number(req.query.page) || 1;
+
+        return res.render("comida", {
+            productos: obtenerProductosPaginados(
+                productsData.comida,
+                page
+            ),
+            page
+        });
     },
+
     accesorios: (req, res) => {
-        const productos = productsData.accesorios;
-        return res.render("accesorios", { productos });
+
+        const page = Number(req.query.page) || 1;
+
+        return res.render("accesorios", {
+            productos: obtenerProductosPaginados(
+                productsData.accesorios,
+                page
+            ),
+            page
+        });
     }
 };
 
+
+function obtenerProductosPaginados(productos, page) {
+
+    const inicio = (page - 1) * CANT_PRODUCTOS;
+    const fin = inicio + CANT_PRODUCTOS;
+
+    return productos.slice(inicio, fin);
+}
 export default homeController;
