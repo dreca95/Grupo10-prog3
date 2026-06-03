@@ -71,6 +71,15 @@ nav a:hover {
     text-align: center;
 }
 
+/*container de productos*/
+.container.productosList {
+    max-width: 100%;
+    width: 100%;
+    margin: 40px auto;
+    padding: 20px 40px;
+    text-align: left;
+}
+
 /* Título */
 .container h2 {
     margin-bottom: 20px;
@@ -114,12 +123,65 @@ button:hover {
     nav {
         margin-top: 10px;
     }
+
+    .productoCard {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .productoImagen {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .productoImagen img {
+        width: 100%;
+        height: auto;
+    }
 }
 
 /* Productos */
 .productos-container {
     text-align: center;
 }
+
+
+/* cards de producto */
+.productosGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.productoCard {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.productoImagen {
+    width: 100%;
+    max-width: 200px;
+}
+
+.productoInfo {
+    width: 100%;
+}
+
+.productoImagen img {
+    width: 100%;
+    height: 200px;
+    border-radius: 6px;
+}
+
 
 .categorias {
     display: flex;
@@ -139,8 +201,43 @@ button:hover {
     color: white;
     cursor: pointer;
     transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .categoria-btn:hover {
     background: #2e7d32;
+}
+
+/*Pagninación, anterior y siguiente*/
+.pagination {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+}
+
+.pagination a {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #2e7d32;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.pagination a:hover {
+    background: #1b5e20;
+}
+
+.pagination a.disabled {
+    background: #c0c0c0;
+    color: #777;
+}
+
+.pagination span {
+    font-weight: bold;
 }

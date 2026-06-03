@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Comida - Mascotero</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+
+<body>
+
+    <%- include('partials/header') %>
+
+        <div class="container productosList">
+            <h2>Comida</h2>
+
+            <% if (productos && productos.length) { %>
+                <div class="productosGrid">
+                    <% productos.forEach(function(prod){ %>
+                        <div class="productoCard">
+                            <div class="productoImagen">
+                                <img src="/img/1.png" alt="<%= prod.nombre %>" onerror="this.src='/img/error.png'">
+                            </div>
+                            <div class="productoInfo">
+                                <h3>
+                                    <%= prod.nombre %>
+                                </h3>
+                                <p><strong>Precio:</strong> $<%= prod.precio %>
+                                </p>
+                                <p><strong>Descripción:</strong>
+                                    <%= prod.descripcion %>
+                                </p>
+
+                            </div>
+                        </div>
+                        <% }) %>
+                </div>
+                <% } else { %>
+                    <p>No hay productos.</p>
+                    <% } %>
+        </div>
+
+        <%- include('partials/footer') %>
+
+</body>
+
+</html>
