@@ -1,0 +1,16 @@
+
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
+
+const Alimento = sequelize.define('ALIMENTOS', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  nombre: { type: DataTypes.STRING },
+  precio: { type: DataTypes.FLOAT },
+  descripcion: { type: DataTypes.STRING }
+
+}, {
+  freezeTableName: true,
+  timestamps: false
+});
+
+export default Alimento;
