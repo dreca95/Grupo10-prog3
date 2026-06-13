@@ -1,7 +1,7 @@
 import express from "express";
-import homeController from "../controllers/homeController.js";
+import adminController from "../controllers/adminController.js";
 
 const router = express.Router();
-router.post("/login", homeController.loginPost);
+router.post("/login", adminController.loginPost);
 
 export default router;
