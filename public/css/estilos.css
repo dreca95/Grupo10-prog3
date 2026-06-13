@@ -122,8 +122,33 @@ button {
 }
 
 button:hover {
-    background: #1b5e20;
+    filter: brightness(0.9);
 }
+
+.productoActions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.productoBtn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.productoBtn.editarBtn {
+    background: #2e7d32;
+    color: white;
+}
+
+.productoBtn.eliminarBtn {
+    background: #c62828;
+    color: white;
+}
+
 
 #administradorBtn {
     position: fixed;
@@ -137,10 +162,6 @@ button:hover {
     color: white;
     border-radius: 8px;
     font-weight: bold;
-}
-
-#administradorBtn:hover {
-    background: #1b5e20;
 }
 
 /* Responsive */
