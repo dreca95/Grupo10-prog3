@@ -272,3 +272,76 @@ button:hover {
 .pagination span {
     font-weight: bold;
 }
+
+/* Two-column layout */
+.two-columns {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.column {
+    flex: 1;
+    min-width: 0;
+}
+
+.two-columns .back-section {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Responsive: single column on small screens */
+@media (max-width: 900px) {
+    .two-columns {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .column,
+    .two-columns .back-section {
+        flex: 100%;
+    }
+}
+
+/* Backoffice container and layout */
+.backofficeContainer {
+    margin: 40px auto;
+    padding: 0 20px;
+    max-width: 1200px;
+}
+
+.backofficeContainer h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.backofficeColumnas {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.backSection {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.backSection h3 {
+    color: #2e7d32;
+    margin-bottom: 15px;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+    .backofficeColumnas {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .backSection {
+        flex: 100%;
+    }
+}

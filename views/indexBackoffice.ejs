@@ -1,1 +1,76 @@
-<h1>backoffice inicio</h1>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Backoffice - Mascotero</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+
+<body>
+
+    <%- include('partials/header') %>
+
+        <div class="backofficeContainer">
+            <h2>Backoffice</h2>
+
+            <div class="backofficeColumnas">
+                <section class="backSection">
+                    <h3>Accesorios</h3>
+                    <% if (accesorios && accesorios.length) { %>
+                        <div class="productosGrid">
+                            <% accesorios.forEach(a=> { %>
+                                <div class="productoCard">
+                                    <div class="productoInfo">
+                                        <strong>
+                                            <%= a.nombre %>
+                                        </strong>
+                                        <p>Precio: <%= a.precio %>
+                                        </p>
+                                        <% if (a.descripcion) { %>
+                                            <p>
+                                                Descripción: <%= a.descripcion %>
+                                            </p>
+                                            <% } %>
+                                    </div>
+                                </div>
+                                <% }) %>
+                        </div>
+                        <% } else { %>
+                            <p>No hay accesorios cargados.</p>
+                            <% } %>
+                </section>
+
+                <section class="backSection">
+                    <h3>Alimentos</h3>
+                    <% if (alimentos && alimentos.length) { %>
+                        <div class="productosGrid">
+                            <% alimentos.forEach(p=> { %>
+                                <div class="productoCard">
+                                    <div class="productoInfo">
+                                        <strong>
+                                            <%= p.nombre %>
+                                        </strong>
+                                        <p>Precio: <%= p.precio %>
+                                        </p>
+                                        <% if (p.descripcion) { %>
+                                            <p>
+                                                Descripción: <%= p.descripcion %>
+                                            </p>
+                                            <% } %>
+                                    </div>
+                                </div>
+                                <% }) %>
+                        </div>
+                        <% } else { %>
+                            <p>No hay alimentos cargados.</p>
+                            <% } %>
+                </section>
+            </div>
+
+        </div>
+
+        <script src="/js/indexBackoffice.js"></script>
+</body>
+
+</html>
