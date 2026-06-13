@@ -1,6 +1,7 @@
 import ejs from "ejs"; // Motor de plantillas EJS para renderizar vistas dinámicas
 import express from "express"; // Framework Express para crear el servidor web
 import homeRouter from "./src/routes/homeRoutes.js"; // Rutas definidas para la sección principal (home)
+import adminRouter from "./src/routes/adminRoutes.js"; // Rutas definidas para la administración
 import sequelize from './src/config/database.js'; // Carga las variables de entorno desde el archivo .env
 import Accesorio from "./src/models/accesorios.js";
 import dotenv from "dotenv";
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true })); // Habilita el uso de datos URL
 app.set("view engine", "ejs"); // Configura EJS como motor de vistas de la aplicación
 app.use(express.static("public")); // Habilita el uso de archivos estáticos (css, imágenes, js) desde "public"
 app.use(homeRouter); // Registra y activa las rutas importadas desde homeRoutes.js
+app.use(adminRouter); // Registra y activa las rutas importadas desde adminRoutes.js
 
 // Define la ruta raíz ("/")
 app.get("/", (req, res) => {
@@ -30,7 +32,7 @@ app.get("/", (req, res) => {
 // CONEXIÓN A RAILWAY-BD
 (async () => {
     try {
-        
+
         //console.log("Conectado a PostgreSQL");
 
         // INSERT de prueba

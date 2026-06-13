@@ -89,9 +89,22 @@ nav a:hover {
 input {
     width: 100%;
     padding: 10px;
-    margin-top: 10px;
+    margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+/* Label */
+label {
+    display: block;
+    margin-bottom: 3px;
+    font-weight: 500;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 15px;
 }
 
 /* Botón */
@@ -109,6 +122,24 @@ button {
 }
 
 button:hover {
+    background: #1b5e20;
+}
+
+#administradorBtn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 999;
+    display: inline-block;
+    width: auto;
+    padding: 12px 18px;
+    background: #2e7d32;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+#administradorBtn:hover {
     background: #1b5e20;
 }
 
