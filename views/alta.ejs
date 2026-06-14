@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Alta - Mascotero</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+
+<body>
+
+    <%- include('partials/header') %>
+
+        <div class="container">
+            <h1>Alta de Producto</h1>
+
+            <% if (typeof error !== 'undefined') { %>
+                <p class="error"><%= error %></p>
+            <% } %>
+
+            <form action="/productos/alta" method="post">
+                <div class="espacios">
+                    <label for="tipo">Tipo de producto</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Seleccione...</option>
+                        <option value="accesorio">Accesorio</option>
+                        <option value="alimento">Alimento</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="nombre">Nombre de producto</label>
+                    <input id="nombre" name="nombre" type="text" required />
+                </div>
+
+                <div>
+                    <label for="precio">Precio</label>
+                    <input id="precio" name="precio" type="number" step="0.01" min="0" value="0" />
+                    <p id="precioError" class="error" style="display: none;"></p>
+                </div>
+
+                <div>
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+                </div>
+
+                <button type="submit">Aceptar</button>
+                <button type="button" class="cancelarBtn" onclick="window.history.back()">Cancelar</button>
+            </form>
+        </div>
+
+        <%- include('partials/footer') %>
+
+        <script>
+            const precioInput = document.getElementById('precio');
+            const precioError = document.getElementById('precioError');
+            const form = document.querySelector('form');
+
+            function restaurarPrecioSiVacio() {
+                if (precioInput.value === '') {
+                    precioInput.value = 0;
+                }
+            }
+
+            function ocultarErrorPrecio() {
+                precioError.style.display = 'none';
+                precioError.textContent = '';
+            }
+
+            function mostrarErrorPrecio() {
+                precioError.textContent = 'El precio debe ser mayor a $0.';
+                precioError.style.display = 'block';
+            }
+
+            precioInput.addEventListener('blur', restaurarPrecioSiVacio);
+            precioInput.addEventListener('input', ocultarErrorPrecio);
+
+            form.addEventListener('submit', (e) => {
+                restaurarPrecioSiVacio();
+                const precio = Number(precioInput.value);
+
+                if (Number.isNaN(precio) || precio <= 0) {
+                    e.preventDefault();
+                    mostrarErrorPrecio();
+                }
+            });
+        </script>
+</body>
+
+</html>
