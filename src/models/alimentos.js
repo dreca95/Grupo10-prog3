@@ -6,7 +6,8 @@ const Alimento = sequelize.define('ALIMENTOS', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   nombre: { type: DataTypes.STRING },
   precio: { type: DataTypes.FLOAT },
-  descripcion: { type: DataTypes.STRING }
+  descripcion: { type: DataTypes.STRING },
+  estado: { type: DataTypes.BOOLEAN, defaultValue: true }
 
 }, {
   freezeTableName: true,

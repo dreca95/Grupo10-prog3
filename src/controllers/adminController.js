@@ -10,12 +10,12 @@ function precioParaInput(precio) {
 
 async function obtenerDatosBackoffice() {
     const accesorios = await Accesorio.findAll({
-        attributes: ["id", "nombre", "precio", "descripcion"],
+        attributes: ["id", "nombre", "precio", "descripcion", "estado"],
         order: [["nombre", "ASC"]]
     });
 
     const alimentos = await Alimento.findAll({
-        attributes: ["id", "nombre", "precio", "descripcion"],
+        attributes: ["id", "nombre", "precio", "descripcion", "estado"],
         order: [["nombre", "ASC"]]
     });
 
@@ -72,7 +72,8 @@ const adminController = {
             const datos = {
                 nombre,
                 precio: precioNum,
-                descripcion
+                descripcion,
+                estado: true
             };
 
             if (tipo === "accesorio") {
@@ -100,7 +101,7 @@ const adminController = {
             const Model = tipo === "accesorio" ? Accesorio : Alimento;
             const producto = await Model.findByPk(id);
 
-            if (!producto) {
+            if (!producto || producto.estado === false) {
                 return res.redirect("/backoffice");
             }
 
@@ -136,7 +137,7 @@ const adminController = {
             const Model = tipo === "accesorio" ? Accesorio : Alimento;
             const existente = await Model.findByPk(id);
 
-            if (!existente) {
+            if (!existente || existente.estado === false) {
                 return res.redirect("/backoffice");
             }
 
@@ -154,6 +155,56 @@ const adminController = {
                 tipo,
                 error: "No se pudo guardar el producto."
             });
+        }
+    },
+
+    bajaPost: async (req, res) => {
+        const { tipo, id } = req.params;
+
+        if (tipo !== "accesorio" && tipo !== "alimento") {
+            return res.redirect("/backoffice");
+        }
+
+        try {
+            const Model = tipo === "accesorio" ? Accesorio : Alimento;
+            const producto = await Model.findByPk(id);
+
+            if (!producto || producto.estado === false) {
+                return res.redirect("/backoffice");
+            }
+
+            await Model.update({ estado: false }, { where: { id } });
+
+            const mensaje = encodeURIComponent(`Producto "${producto.nombre}" eliminado con éxito`);
+            return res.redirect(303, `/backoffice?mensaje=${mensaje}`);
+        } catch (err) {
+            console.error("Error en baja:", err);
+            return res.redirect("/backoffice");
+        }
+    },
+
+    activarPost: async (req, res) => {
+        const { tipo, id } = req.params;
+
+        if (tipo !== "accesorio" && tipo !== "alimento") {
+            return res.redirect("/backoffice");
+        }
+
+        try {
+            const Model = tipo === "accesorio" ? Accesorio : Alimento;
+            const producto = await Model.findByPk(id);
+
+            if (!producto || producto.estado !== false) {
+                return res.redirect("/backoffice");
+            }
+
+            await Model.update({ estado: true }, { where: { id } });
+
+            const mensaje = encodeURIComponent(`Producto "${producto.nombre}" activado con éxito`);
+            return res.redirect(303, `/backoffice?mensaje=${mensaje}`);
+        } catch (err) {
+            console.error("Error en activación:", err);
+            return res.redirect("/backoffice");
         }
     }
 };
