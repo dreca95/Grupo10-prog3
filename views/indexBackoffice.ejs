@@ -24,7 +24,10 @@
                     <% if (accesorios && accesorios.length) { %>
                         <div class="productosGrid">
                             <% accesorios.forEach(a=> { %>
-                                <div class="productoCard">
+                                <div class="productoCard<%= a.estado === false ? ' inactivo' : '' %>">
+                                    <% if (a.estado === false) { %>
+                                        <span class="estadoInactivo">INACTIVO</span>
+                                    <% } %>
                                     <div class="productoInfo">
                                         <strong>
                                             <%= a.nombre %>
@@ -38,9 +41,19 @@
                                             <% } %>
                                     </div>
                                     <div class="productoActions">
-                                        <button type="button" class="productoBtn editarBtn"
-                                            onclick="window.location.href='/edicion/accesorio/<%= a.id %>'">Editar</button>
-                                        <button type="button" class="productoBtn eliminarBtn">Eliminar</button>
+                                        <% if (a.estado === false) { %>
+                                            <form action="/productos/activar/accesorio/<%= a.id %>" method="post"
+                                                class="activarForm">
+                                                <button type="submit" class="productoBtn activarBtn">Activar</button>
+                                            </form>
+                                        <% } else { %>
+                                            <button type="button" class="productoBtn editarBtn"
+                                                onclick="window.location.href='/edicion/accesorio/<%= a.id %>'">Editar</button>
+                                            <form action="/productos/baja/accesorio/<%= a.id %>" method="post"
+                                                class="bajaForm">
+                                                <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
+                                            </form>
+                                        <% } %>
                                     </div>
                                 </div>
                                 <% }) %>
@@ -55,7 +68,10 @@
                     <% if (alimentos && alimentos.length) { %>
                         <div class="productosGrid">
                             <% alimentos.forEach(p=> { %>
-                                <div class="productoCard">
+                                <div class="productoCard<%= p.estado === false ? ' inactivo' : '' %>">
+                                    <% if (p.estado === false) { %>
+                                        <span class="estadoInactivo">INACTIVO</span>
+                                    <% } %>
                                     <div class="productoInfo">
                                         <strong>
                                             <%= p.nombre %>
@@ -69,9 +85,19 @@
                                             <% } %>
                                     </div>
                                     <div class="productoActions">
-                                        <button type="button" class="productoBtn editarBtn"
-                                            onclick="window.location.href='/edicion/alimento/<%= p.id %>'">Editar</button>
-                                        <button type="button" class="productoBtn eliminarBtn">Eliminar</button>
+                                        <% if (p.estado === false) { %>
+                                            <form action="/productos/activar/alimento/<%= p.id %>" method="post"
+                                                class="activarForm">
+                                                <button type="submit" class="productoBtn activarBtn">Activar</button>
+                                            </form>
+                                        <% } else { %>
+                                            <button type="button" class="productoBtn editarBtn"
+                                                onclick="window.location.href='/edicion/alimento/<%= p.id %>'">Editar</button>
+                                            <form action="/productos/baja/alimento/<%= p.id %>" method="post"
+                                                class="bajaForm">
+                                                <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
+                                            </form>
+                                        <% } %>
                                     </div>
                                 </div>
                                 <% }) %>

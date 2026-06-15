@@ -194,6 +194,44 @@ button:hover {
     color: white;
 }
 
+.bajaForm {
+    flex: 1;
+    display: flex;
+}
+
+.bajaForm .productoBtn {
+    width: 100%;
+}
+
+.productoBtn.activarBtn {
+    background: #3dcc84;
+    color: white;
+}
+
+.productoCard.inactivo {
+    background: #f0f0f0;
+    position: relative;
+}
+
+.productoCard.inactivo .productoInfo,
+.productoCard.inactivo .estadoInactivo {
+    opacity: 0.55;
+}
+
+.estadoInactivo {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+    color: #757575;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+.productoBtn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 
 #administradorBtn {
     position: fixed;

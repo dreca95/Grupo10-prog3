@@ -18,30 +18,28 @@ const homeController = {
     const page = Number(req.query.page) || 1;
     const { limit, offset } = obtenerPaginado(page);
 
-    const { rows: productos, count } = await Alimento.findAndCountAll({
+    const { rows: productos } = await Alimento.findAndCountAll({
+      where: { estado: true },
       limit,
       offset,
       order: [["nombre", "ASC"]],
     });
 
-    const totalPages = Math.max(1, Math.ceil(count / limit));
-
-    return res.render("alimentos", { productos, page, totalPages });
+    return res.render("alimentos", { productos, page });
   },
 
   accesorios: async (req, res) => {
     const page = Number(req.query.page) || 1;
     const { limit, offset } = obtenerPaginado(page);
 
-    const { rows: productos, count } = await Accesorio.findAndCountAll({
+    const { rows: productos } = await Accesorio.findAndCountAll({
+      where: { estado: true },
       limit,
       offset,
       order: [["nombre", "ASC"]],
     });
 
-    const totalPages = Math.max(1, Math.ceil(count / limit));
-
-    return res.render("accesorios", { productos, page, totalPages });
+    return res.render("accesorios", { productos, page });
   },
 };
 
