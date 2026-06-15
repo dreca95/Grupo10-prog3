@@ -46,48 +46,15 @@
                         required><%= producto.descripcion %></textarea>
                 </div>
 
-                <button type="submit">Aceptar</button>
+                <button type="submit">Guardar cambios</button>
                 <button type="button" class="cancelarBtn" onclick="window.history.back()">Cancelar</button>
             </form>
         </div>
 
         <%- include('partials/footer') %>
 
-        <script>
-            const precioInput = document.getElementById('precio');
-            const precioError = document.getElementById('precioError');
-            const form = document.querySelector('form');
-            const precioOriginal = precioInput.value;
-
-            function restaurarPrecioSiVacio() {
-                if (precioInput.value === '') {
-                    precioInput.value = precioOriginal;
-                }
-            }
-
-            function ocultarErrorPrecio() {
-                precioError.style.display = 'none';
-                precioError.textContent = '';
-            }
-
-            function mostrarErrorPrecio() {
-                precioError.textContent = 'El precio debe ser mayor a $0.';
-                precioError.style.display = 'block';
-            }
-
-            precioInput.addEventListener('blur', restaurarPrecioSiVacio);
-            precioInput.addEventListener('input', ocultarErrorPrecio);
-
-            form.addEventListener('submit', (e) => {
-                restaurarPrecioSiVacio();
-                const precio = Number(precioInput.value);
-
-                if (Number.isNaN(precio) || precio <= 0) {
-                    e.preventDefault();
-                    mostrarErrorPrecio();
-                }
-            });
-        </script>
+        <script src="/js/validacionPrecio.js"></script>
+        <script>initValidacionPrecio();</script>
 </body>
 
 </html>
