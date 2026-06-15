@@ -21,9 +21,11 @@
             <form action="/productos/edicion/<%= tipo %>/<%= producto.id %>" method="post">
 
                 <div class="espacios">
-                    <label for="tipoProducto">Tipo de producto</label>
-                    <input id="tipoProducto" type="text"
-                        value="<%= tipo === 'accesorio' ? 'Accesorio' : 'Alimento' %>" disabled />
+                    <label for="tipo">Tipo de producto</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="accesorio" <%= tipo === 'accesorio' ? 'selected' : '' %>>Accesorio</option>
+                        <option value="alimento" <%= tipo === 'alimento' ? 'selected' : '' %>>Alimento</option>
+                    </select>
                 </div>
 
                 <div>

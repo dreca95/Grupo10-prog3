@@ -116,35 +116,52 @@ const adminController = {
     },
 
     edicionPost: async (req, res) => {
-        const { tipo, id } = req.params;
-        const { nombre, precio, descripcion } = req.body;
+        const { tipo: tipoOriginal, id } = req.params;
+        const { tipo: tipoNuevo, nombre, precio, descripcion } = req.body;
         const precioNum = Number(precio);
         const producto = { id, nombre, precio: precioNum, descripcion };
 
-        if (tipo !== "accesorio" && tipo !== "alimento") {
-            return res.redirect("/backoffice");
+        if (tipoNuevo !== "accesorio" && tipoNuevo !== "alimento") {
+            return res.render("edicion", {
+                producto,
+                tipo: tipoOriginal,
+                error: "Tipo de producto inválido."
+            });
         }
 
         if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
             return res.render("edicion", {
                 producto,
-                tipo,
+                tipo: tipoNuevo,
                 error: "El precio debe ser mayor a $0."
             });
         }
 
         try {
-            const Model = tipo === "accesorio" ? Accesorio : Alimento;
-            const existente = await Model.findByPk(id);
+            const ModelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
+            const existente = await ModelOriginal.findByPk(id);
 
             if (!existente || existente.estado === false) {
                 return res.redirect("/backoffice");
             }
 
-            await Model.update(
-                { nombre, precio: precioNum, descripcion },
-                { where: { id } }
-            );
+            if (tipoOriginal !== tipoNuevo) {
+                const ModelNuevo = tipoNuevo === "accesorio" ? Accesorio : Alimento;
+
+                await ModelNuevo.create({
+                    nombre,
+                    precio: precioNum,
+                    descripcion,
+                    estado: existente.estado
+                });
+
+                await ModelOriginal.destroy({ where: { id } });
+            } else {
+                await ModelOriginal.update(
+                    { nombre, precio: precioNum, descripcion },
+                    { where: { id } }
+                );
+            }
 
             const mensaje = encodeURIComponent(`Producto "${nombre}" editado con éxito`);
             return res.redirect(303, `/backoffice?mensaje=${mensaje}`);
@@ -152,7 +169,7 @@ const adminController = {
             console.error("Error en edición:", err);
             return res.render("edicion", {
                 producto,
-                tipo,
+                tipo: tipoNuevo,
                 error: "No se pudo guardar el producto."
             });
         }

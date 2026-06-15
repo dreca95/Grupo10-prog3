@@ -3,7 +3,6 @@ import express from "express"; // Framework Express para crear el servidor web
 import homeRouter from "./src/routes/homeRoutes.js"; // Rutas definidas para la sección principal (home)
 import adminRouter from "./src/routes/adminRoutes.js"; // Rutas definidas para la administración
 import sequelize from './src/config/database.js'; // Carga las variables de entorno desde el archivo .env
-import Accesorio from "./src/models/accesorios.js";
 import dotenv from "dotenv";
 import apiRouter from "./src/routes/apiRoutes.js";
 
@@ -43,8 +42,8 @@ app.get("/", (req, res) => {
         //console.log("Insert realizado:", nuevo.toJSON());
 
         // SELECT de prueba
-        const total = await Accesorio.count();
-        console.log("Total de ACCESORIOS: ", total);
+        // const total = await Accesorio.count();
+        // console.log("Total de ACCESORIOS: ", total);
         //const todos = await Accesorio.findAll();
         //console.log("Registros:", todos.map(a => a.toJSON()));
 
