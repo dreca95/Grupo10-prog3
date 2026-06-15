@@ -14,8 +14,8 @@
         <div class="backofficeContainer">
             <h2>Backoffice</h2>
 
-            <% if (typeof mensaje !== 'undefined' && mensaje) { %>
-                <p class="exito"><%= mensaje %></p>
+            <% if (typeof cookie !== 'undefined' && cookie) { %>
+                <p class="<%= cookie.tipo === 'exito' ? 'exito' : 'error' %>"><%= cookie.mensaje %></p>
             <% } %>
 
             <div class="backofficeColumnas">
