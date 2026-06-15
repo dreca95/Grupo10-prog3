@@ -5,6 +5,7 @@ import adminRouter from "./src/routes/adminRoutes.js"; // Rutas definidas para l
 import sequelize from './src/config/database.js'; // Carga las variables de entorno desde el archivo .env
 import dotenv from "dotenv";
 import apiRouter from "./src/routes/apiRoutes.js";
+import cookieParser from "cookie-parser";
 
 
 dotenv.config();
@@ -14,6 +15,7 @@ const PORT = process.env.PORT; // Obtiene el puerto desde las variables de entor
 app.use("/api", apiRouter); // Activa las rutas importadas desde apiRoutes.js
 app.use(express.json()); // Habilita el uso de datos JSON en las solicitudes
 app.use(express.urlencoded({ extended: true })); // Habilita el uso de datos URL en las solicitudes
+app.use(cookieParser());
 
 // Configuración
 app.set("view engine", "ejs"); // Configura EJS como motor de vistas de la aplicación
