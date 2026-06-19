@@ -1,30 +1,22 @@
 import express from "express";
 import adminController from "../controllers/adminController.js";
-import {
-    validarLogin,
-    validarProducto,
-    validarTipoIdParams
-} from "../middlewares/adminMiddlewares.js";
+import {validarLogin, validarProducto, validarTipoIdParams, verificarAdmin} from "../middlewares/adminMiddlewares.js";
 
 const router = express.Router();
 
-router.get("/admin/login", (req, res) => res.render("admin/login"));
+router.get("/admin/login", adminController.loginGet);
 router.post("/admin/login", validarLogin, adminController.loginPost);
 
-router.get("/admin/backoffice", adminController.backofficeGet);
+router.get("/admin/backoffice", verificarAdmin, adminController.backofficeGet);
 
-router.get("/admin/alta", adminController.altaGet);
-router.post("/admin/productos/alta", validarProducto, adminController.altaPost);
+router.get("/admin/alta", verificarAdmin, adminController.altaGet);
+router.post("/admin/productos/alta", verificarAdmin, validarProducto, adminController.altaPost);
 
-router.get("/admin/edicion/:tipo/:id", validarTipoIdParams, adminController.edicionGet);
+router.get("/admin/edicion/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.edicionGet);
 router.post(
-    "/admin/productos/edicion/:tipo/:id",
-    validarTipoIdParams,
-    validarProducto,
-    adminController.edicionPost
-);
+    "/admin/productos/edicion/:tipo/:id", verificarAdmin, validarTipoIdParams, validarProducto, adminController.edicionPost);
 
-router.post("/admin/productos/baja/:tipo/:id", validarTipoIdParams, adminController.bajaPost);
-router.post("/admin/productos/activar/:tipo/:id", validarTipoIdParams, adminController.activarPost);
+router.post("/admin/productos/baja/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.bajaPost);
+router.post("/admin/productos/activar/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.activarPost);
 
 export default router;

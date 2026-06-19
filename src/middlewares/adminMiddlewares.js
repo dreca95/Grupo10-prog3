@@ -1,7 +1,7 @@
 import { redirigirBackofficeError } from "../utils/cookies.js";
+import { borrarToken, obtenerToken, verificarJWT } from "../utils/jwt.js";
 
 const TIPOS = ["accesorio", "alimento"];
-
 function esValido(tipo) {
     return TIPOS.includes(tipo);
 }
@@ -12,6 +12,23 @@ function parsePrecio(precio) {
         return null;
     }
     return precioNum;
+}
+
+export async function verificarAdmin(req, res, next) {
+    const token = obtenerToken(req);
+
+    if (!token) {
+        return res.redirect("/admin/login");
+    }
+
+    const payload = await verificarJWT(token);
+    if (!payload) {
+        borrarToken(res);
+        return res.redirect("/admin/login");
+    }
+
+    req.admin = payload;
+    next();
 }
 
 export function validarLogin(req, res, next) {

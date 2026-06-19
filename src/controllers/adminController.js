@@ -3,6 +3,7 @@ import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
+import { generarJWT, guardarToken, obtenerToken, verificarJWT, borrarToken } from "../utils/jwt.js";
 
 function precioParaInput(precio) {
     const num = Number(String(precio).replace(/[^0-9.-]/g, ""));
@@ -25,7 +26,19 @@ async function obtenerDatosBackoffice() {
 }
 
 const adminController = {
- 
+
+    loginGet: async (req, res) => {
+        const token = obtenerToken(req);
+        if (token) {
+            const payload = await verificarJWT(token);
+            if (payload) {
+                return res.redirect("/admin/backoffice");
+            }
+            borrarToken(res);
+        }
+        return res.render("admin/login");
+    },
+
     loginPost: async (req, res) => {
         const { usuario, password } = req.body;
 
@@ -42,8 +55,12 @@ const adminController = {
                 return res.render("admin/login", { error: "Usuario y/o Password incorrecto(s)." });
             }
 
-            const { accesorios, alimentos } = await obtenerDatosBackoffice();
-            return res.render("admin/indexBackoffice", { accesorios, alimentos });
+            const token = await generarJWT({
+                id: admin.id,
+                usuario: admin.usuario
+            });
+            guardarToken(res, token);
+            return res.redirect("/admin/backoffice");
         } catch (err) {
             console.error("Error en login:", err);
             res.render("admin/login", { error: "No se pudo conectar a la base de dato" });
