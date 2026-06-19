@@ -449,3 +449,57 @@ button:hover {
         flex: 100%;
     }
 }
+
+#confirmarModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#confirmarModal.mostrar {
+    display: flex;
+}
+
+.modal {
+    background: white;
+    padding: 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.modal p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.modalActions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modalActions button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.modalCancelar {
+    background: #757575;
+    color: white;
+}
+
+.modalConfirmar {
+    background: #3dcc84;
+    color: white;
+}
+
