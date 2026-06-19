@@ -37,6 +37,7 @@ function parseMoneyToNumber(v) {
 const getAccesorios = async (req, res) => {
   const rows = await Accesorio.findAll({
     where: { estado: true },
+    order: [["nombre", "ASC"]],
     raw: true
   });
   // con raw:true evitamos getters raros; y además parseamos si viene con $
@@ -46,6 +47,7 @@ const getAccesorios = async (req, res) => {
 const getAlimentos = async (req, res) => {
   const rows = await Alimento.findAll({
     where: { estado: true },
+    order: [["nombre", "ASC"]],
     raw: true
   });
   res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
