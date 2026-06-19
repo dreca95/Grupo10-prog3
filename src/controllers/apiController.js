@@ -1,6 +1,8 @@
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
 import Venta from "../models/ventas.js";
+import Administrador from "../models/administradores.js";
+import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
 import crypto from "crypto";
 
@@ -234,10 +236,47 @@ const descargarTicketPdf = async (req, res) => {
   return res.send(pdfBuffer);
 };
 
+
+const crearAdministrador = async (req, res) => {
+  try {
+    const { usuario, password } = req.body || {};
+
+    if (!usuario || typeof usuario !== "string" || !usuario.trim()) {
+      return res.status(400).json({ error: "usuario requerido" });
+    }
+    if (!password || typeof password !== "string" || !password.trim()) {
+      return res.status(400).json({ error: "password requerido" });
+    }
+
+    const usuarioTrimeado = usuario.trim();
+    const existe = await Administrador.findOne({ where: { usuario: usuarioTrimeado } });
+    if (existe) {
+      return res.status(409).json({ error: "el usuario ya existe" });
+    } //409 codnflict: recurso duplicado
+
+    const hash = await bcrypt.hash(password, 10);
+    const admin = await Administrador.create({
+      usuario: usuarioTrimeado,
+      password: hash
+    });
+
+    return res.status(201).json({
+      ok: true,
+      administrador: {
+        id: admin.id,
+        usuario: admin.usuario
+      }
+    });
+  } catch (e) {
+    return res.status(500).json({ error: "error al crear user", details: e.message });
+  }
+};
+
 export default {
   getAccesorios,
   getAlimentos,
   crearVenta,
   getVenta,
-  descargarTicketPdf
+  descargarTicketPdf,
+  crearAdministrador
 };
