@@ -2,7 +2,7 @@ import Alimento from "../models/alimentos.js";
 import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
-
+import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 
 function precioParaInput(precio) {
     const num = Number(String(precio).replace(/[^0-9.-]/g, ""));
@@ -24,33 +24,7 @@ async function obtenerDatosBackoffice() {
     return { accesorios, alimentos };
 }
 
-function setCookie(res, tipo, mensaje) {
-    res.cookie("flash", JSON.stringify({ tipo, mensaje }), {
-        maxAge: 5000,
-        httpOnly: true
-    });
-}
-
-function leerCookie(req, res) {
-    const raw = req.cookies.flash;
-    if (!raw) return null;
-
-    res.clearCookie("flash");
-
-    try {
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
-}
-
-function redirectBackoffice(res, tipo, mensaje) {
-    setCookie(res, tipo, mensaje);
-    return res.redirect(303, "/admin/backoffice");
-}
-
 const adminController = {
-
  
     loginPost: async (req, res) => {
         const { usuario, password } = req.body;
@@ -94,12 +68,7 @@ const adminController = {
 
 
     altaPost: async (req, res) => {
-        const { tipo, nombre, precio, descripcion } = req.body;
-        const precioNum = Number(precio);
-
-        if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
-            return res.render("admin/alta", { error: "El precio debe ser mayor a $0." });
-        }
+        const { tipo, nombre, descripcion, precioNum } = req.body;
 
         try {
             const datos = {
@@ -115,7 +84,7 @@ const adminController = {
                 await Alimento.create(datos);
             }
 
-            return redirectBackoffice(res, "exito", `Producto ${nombre} agregado exitosamente`);
+            return redirigirBackoffice(res, "exito", `Producto ${nombre} agregado exitosamente`);
         } catch (err) {
             console.error("Error en alta:", err);
             return res.render("admin/alta", { error: "No se pudo guardar " });
@@ -132,7 +101,7 @@ const adminController = {
 
             //en caso que se modifique a mano el id y sea uno q no existe agrego !producto
             if (!producto || producto.estado === false) {
-                return redirectBackoffice(res, "error", "No se pudo editar");
+                return redirigirBackoffice(res, "error", "No se pudo editar");
             }
 
             const data = producto.toJSON();
@@ -141,24 +110,15 @@ const adminController = {
             return res.render("admin/edicion", { producto: data, tipo });
         } catch (err) {
             console.error("Error en edición:", err);
-            return redirectBackoffice(res, "error", "No se pudo editar.");
+            return redirigirBackoffice(res, "error", "No se pudo editar.");
         }
     },
 
  
     edicionPost: async (req, res) => {
         const { tipo: tipoOriginal, id } = req.params;
-        const { tipo: tipoNuevo, nombre, precio, descripcion } = req.body;
-        const precioNum = Number(precio);
+        const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
         const producto = { id, nombre, precio: precioNum, descripcion };
-
-        if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
-            return res.render("admin/edicion", {
-                producto,
-                tipo: tipoNuevo,
-                error: "El precio debe ser mayor a $0."
-            });
-        }
 
         try {
             const ModelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
@@ -166,7 +126,7 @@ const adminController = {
 
             //en caso que se modifique a mano el id y sea uno que no existe se agrego !existente
             if (!existente || existente.estado === false) {
-                return redirectBackoffice(res, "error", "No se pudo editar el producto.");
+                return redirigirBackoffice(res, "error", "No se pudo editar el producto.");
             }
 
             if (tipoOriginal !== tipoNuevo) {
@@ -187,7 +147,7 @@ const adminController = {
                 );
             }
 
-            return redirectBackoffice(res, "exito", `Producto "${nombre}" editado con éxito`);
+            return redirigirBackoffice(res, "exito", `Producto "${nombre}" editado con éxito`);
         } catch (err) {
             return res.render("admin/edicion", {
                 producto,
@@ -207,14 +167,14 @@ const adminController = {
             const producto = await Model.findByPk(id);
 
             if (!producto || producto.estado === false) {
-                return redirectBackoffice(res, "error", "No se pudo dar de baja ");
+                return redirigirBackoffice(res, "error", "No se pudo dar de baja ");
             }
 
             await Model.update({ estado: false }, { where: { id } });
 
-            return redirectBackoffice(res, "exito", `Producto "${producto.nombre}" eliminado con éxito`);
+            return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" eliminado con éxito`);
         } catch (err) {
-            return redirectBackoffice(res, "error", "No se pudo dar de baja el producto");
+            return redirigirBackoffice(res, "error", "No se pudo dar de baja el producto");
         }
     },
 
@@ -226,14 +186,14 @@ const adminController = {
             const producto = await Model.findByPk(id);
 
             if (!producto || producto.estado !== false) {
-                return redirectBackoffice(res, "error", "No se pudo activar.");
+                return redirigirBackoffice(res, "error", "No se pudo activar.");
             }
 
             await Model.update({ estado: true }, { where: { id } });
 
-            return redirectBackoffice(res, "exito", `Producto "${producto.nombre}" activado con éxito`);
+            return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" activado con éxito`);
         } catch (err) {
-            return redirectBackoffice(res, "error", "No se pudo activar el producto");
+            return redirigirBackoffice(res, "error", "No se pudo activar el producto");
         }
     }
 };
