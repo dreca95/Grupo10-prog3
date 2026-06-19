@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Accesorios - Mascotero</title>
+    <link rel="stylesheet" href="/client/css/estilos.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="container productosList">
+      <h2>Accesorios</h2>
+
+      <div id="grid" class="productosGrid"></div>
+
+      <div class="pagination">
+        <a id="prev" href="#"><span>Anterior</span></a>
+        <span id="pageText">Página 1</span>
+        <a id="next" href="#">Siguiente</a>
+      </div>
+    </div>
+
+    <script src="/client/js/include.js"></script>
+    <script src="/client/js/cart.js"></script>
+    <script src="/client/js/paginado.js"></script>
+    <script>
+      __include("#header", "/client/partials/header.html").then(() => {
+        __cart.updateCartBadge();
+      });
+
+      const page = __paginado.getPage();
+      __paginado.renderPagination({
+        page,
+        prevSelector: "#prev",
+        nextSelector: "#next",
+        pageTextSelector: "#pageText"
+      });
+
+      async function cargar() {
+        const grid = document.getElementById("grid");
+        grid.innerHTML = "<p>Cargando...</p>";
+
+        try {
+          const res = await fetch(`/api/accesorios?page=${page}`);
+          if (!res.ok) throw new Error("No se pudo cargar /api/accesorios");
+          const productos = await res.json();
+
+          if (!productos || productos.length === 0) {
+            grid.innerHTML = "<p>No hay productos.</p>";
+            return;
+          }
+
+          grid.innerHTML = "";
+          productos.forEach((prod) => {
+            const tipo = "accesorio";
+            const id = Number(prod.id ?? prod.ID ?? prod.Id);
+            const nombre = prod.nombre;
+            const rawPrecio = prod.precio ?? prod.PRECIO ?? prod.Precio;
+            const precio =
+              typeof rawPrecio === "string"
+                ? Number(rawPrecio.replace(",", "."))
+                : Number(rawPrecio);
+            const descripcion = prod.descripcion ?? "";
+
+            const card = document.createElement("div");
+            card.className = "productoCard";
+            card.innerHTML = `
+              <div class="productoImagen">
+                <img src="/client/img/1.png" alt="${nombre}" onerror="this.src='/client/img/error.png'">
+              </div>
+              <div class="productoInfo">
+                <h3>${nombre}</h3>
+                <p><strong>Precio:</strong> ${precio}</p>
+                <p><strong>Descripción:</strong> ${descripcion}</p>
+
+                <div class="productoActions">
+                  <button type="button" class="productoBtn editarBtn" data-action="add">+</button>
+                  <button type="button" class="productoBtn eliminarBtn" data-action="remove">-</button>
+                </div>
+              </div>
+            `;
+
+            const addBtn = card.querySelector('[data-action="add"]');
+            const removeBtn = card.querySelector('[data-action="remove"]');
+
+            addBtn.addEventListener("click", () => {
+              if (!id) return;
+              __cart.addItem({
+                tipo,
+                id,
+                nombre,
+                precio,
+                descripcion,
+                img: "/client/img/1.png"
+              });
+            });
+
+            removeBtn.addEventListener("click", () => {
+              if (!id) return;
+              __cart.removeItem(tipo, id);
+            });
+
+            grid.appendChild(card);
+          });
+        } catch (e) {
+          grid.innerHTML = `<p class="error">${e.message}</p>`;
+        }
+      }
+
+      cargar();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Carrito - Mascotero</title>
+    <link rel="stylesheet" href="/client/css/estilos.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="container productosList cartContainer">
+      <h2>Carrito</h2>
+
+      <div id="contenido"></div>
+
+      <div class="cartActions">
+        <button id="btnComprar" type="button" class="primary">Comprar</button>
+        <button id="btnCancelar" type="button" class="secondary">Cancelar</button>
+      </div>
+    </div>
+
+    <script src="/client/js/include.js"></script>
+    <script src="/client/js/cart.js"></script>
+    <script>
+      __include("#header", "/client/partials/header.html").then(() => {
+        __cart.updateCartBadge();
+      });
+
+      function money(n) {
+        try {
+          return Number(n).toLocaleString("es-AR", {
+            style: "currency",
+            currency: "ARS"
+          });
+        } catch {
+          return `$${n}`;
+        }
+      }
+
+      function render() {
+        const cont = document.getElementById("contenido");
+        const cart = __cart.loadCart();
+
+        if (!cart.items.length) {
+          cont.innerHTML = "<p>No hay productos en el carrito.</p>";
+          return;
+        }
+
+        const total = __cart.getTotalPrice();
+
+        cont.innerHTML = `
+          <div class="cartList" id="list"></div>
+
+          <div class="cartSummary">
+            <div class="cartSummaryRow total">
+              <span>Total</span>
+              <span>${money(total)}</span>
+            </div>
+          </div>
+        `;
+
+        const list = document.getElementById("list");
+
+        cart.items.forEach((it) => {
+          const row = document.createElement("div");
+          row.className = "cartItem";
+
+          row.innerHTML = `
+            <div class="cartThumb">
+              <img src="${it.img || "/client/img/1.png"}" alt="${it.nombre}" onerror="this.src='/client/img/error.png'">
+            </div>
+
+            <div class="cartInfo">
+              <h3>${it.nombre}</h3>
+              <div class="small">${it.descripcion ? it.descripcion : ""}</div>
+            </div>
+
+            <div class="cartQty">
+              <button type="button" class="qtyBtn remove" data-action="remove">-</button>
+              <span class="qtyValue">${it.cantidad}</span>
+              <button type="button" class="qtyBtn" data-action="add">+</button>
+            </div>
+
+            <div class="cartPrice">
+              <div class="final">${money(it.precio)}</div>
+            </div>
+
+            <div class="cartRemove" title="Quitar">
+              🗑
+            </div>
+          `;
+
+          row.querySelector('[data-action="add"]').addEventListener("click", () => {
+            __cart.addItem(it);
+            render();
+          });
+
+          row.querySelector('[data-action="remove"]').addEventListener("click", () => {
+            __cart.removeItem(it.tipo, it.id);
+            render();
+          });
+
+          row.querySelector(".cartRemove").addEventListener("click", () => {
+            __cart.setQuantity(it.tipo, it.id, 0);
+            render();
+          });
+
+          list.appendChild(row);
+        });
+      }
+
+      document.getElementById("btnCancelar").addEventListener("click", () => {
+        // cancelar = vaciar carrito y volver a productos
+        __cart.clearCart();
+        window.location.href = "/client/productos.html";
+      });
+
+      document.getElementById("btnComprar").addEventListener("click", async () => {
+        const cart = __cart.loadCart();
+        if (!cart.items.length) {
+          alert("El carrito está vacío.");
+          return;
+        }
+
+        const ok = confirm("¿Confirmás la compra?");
+        if (!ok) return;
+
+        const cliente = (localStorage.getItem("cliente_nombre") || "").trim();
+        if (!cliente) {
+          alert(
+            "No se encontró tu nombre (cliente). Volvé a Inicio, ingresalo y luego comprá."
+          );
+          window.location.href = "/";
+          return;
+        }
+
+        try {
+          const payload = {
+            cliente,
+            items: cart.items.map((it) => ({
+              nombre: it.nombre,
+              precio: it.precio,
+              cantidad: it.cantidad
+            }))
+          };
+
+          const res = await fetch("/api/ventas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (!res.ok || !data.ok) {
+            throw new Error(
+              data.error ||
+                "No se pudo confirmar la compra (revisá consola/server logs)"
+            );
+          }
+
+          // limpiar carrito (autoservicio) y navegar al ticket
+          __cart.clearCart();
+          window.location.href = `/client/ticket.html?id=${encodeURIComponent(
+            data.ventaId
+          )}&token=${encodeURIComponent(data.token)}`;
+        } catch (e) {
+          alert(e.message);
+        }
+      });
+
+      render();
+    </script>
+  </body>
+</html>

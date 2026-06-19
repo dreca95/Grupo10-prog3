@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ticket - Mascotero</title>
+    <link rel="stylesheet" href="/client/css/estilos.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="container productosList cartContainer">
+      <h2>Ticket</h2>
+
+      <div id="contenido"></div>
+
+      <div class="cartActions">
+        <button id="btnDescargar" type="button" class="primary">Descargar PDF</button>
+        <button id="btnSalir" type="button" class="secondary">Salir</button>
+      </div>
+    </div>
+
+    <script src="/client/js/include.js"></script>
+    <script src="/client/js/cart.js"></script>
+    <script>
+      __include("#header", "/client/partials/header.html").then(() => {
+        __cart.updateCartBadge();
+      });
+
+      function money(n) {
+        const num = typeof n === "string" ? Number(n.replace(",", ".")) : Number(n);
+        if (!Number.isFinite(num)) return "$ 0";
+        return num.toLocaleString("es-AR", { style: "currency", currency: "ARS" });
+      }
+
+      function formatDateTime(value) {
+        const d = new Date(value);
+        const parts = new Intl.DateTimeFormat("es-AR", {
+          timeZone: "America/Argentina/Buenos_Aires",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false
+        }).formatToParts(d);
+
+        const get = (t) => parts.find((p) => p.type === t)?.value || "00";
+        return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get(
+          "minute"
+        )}:${get("second")}`;
+      }
+
+      function getQueryParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+      }
+
+      async function cargarTicket() {
+        const ventaId = getQueryParam("id");
+        const token = getQueryParam("token");
+
+        const cont = document.getElementById("contenido");
+        if (!ventaId || !token) {
+          cont.innerHTML = "<p class='error'>No se encontró el ticket.</p>";
+          document.getElementById("btnDescargar").disabled = true;
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/ventas/${ventaId}`);
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || "No se pudo cargar la venta");
+
+          const v = data.venta;
+          cont.innerHTML = `
+            <div class="cartSummary">
+              <div class="cartSummaryRow"><span><strong>Empresa</strong></span><span>MASCOTERO</span></div>
+              <div class="cartSummaryRow"><span><strong>Cliente</strong></span><span>${v.cliente}</span></div>
+              <div class="cartSummaryRow"><span><strong>Fecha</strong></span><span>${formatDateTime(v.fecha)}</span></div>
+              <div class="cartSummaryRow"><span><strong>Productos</strong></span><span style="text-align:right; max-width: 520px;">${v.descripcion}</span></div>
+              <div class="cartSummaryRow"><span><strong>Cantidad total</strong></span><span>${v.cantidad}</span></div>
+              <div class="cartSummaryRow total"><span>Total</span><span>${money(v.precio)}</span></div>
+            </div>
+          `;
+
+          document.getElementById("btnDescargar").addEventListener("click", () => {
+            // descarga real desde el servidor (Puppeteer), protegido por token temporal
+            window.location.href = `/api/ventas/${ventaId}/ticket.pdf?token=${encodeURIComponent(token)}`;
+          });
+        } catch (e) {
+          cont.innerHTML = `<p class="error">${e.message}</p>`;
+          document.getElementById("btnDescargar").disabled = true;
+        }
+      }
+
+      document.getElementById("btnSalir").addEventListener("click", () => {
+        // autoservicio: reiniciar flujo
+        localStorage.removeItem("cliente_nombre");
+        __cart.clearCart();
+        window.location.href = "/";
+      });
+
+      cargarTicket();
+    </script>
+  </body>
+</html>

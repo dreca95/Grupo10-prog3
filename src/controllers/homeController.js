@@ -10,9 +10,9 @@ function obtenerPaginado(page) {
 }
 
 const homeController = {
-  login: (req, res) => res.render("login"),
+  login: (req, res) => res.render("admin/login"),
 
-  productos: (req, res) => res.render("productos"),
+  productos: (req, res) => res.render("client/productos"),
 
   alimentos: async (req, res) => {
     const page = Number(req.query.page) || 1;
@@ -25,7 +25,7 @@ const homeController = {
       order: [["nombre", "ASC"]],
     });
 
-    return res.render("alimentos", { productos, page });
+    return res.render("client/alimentos", { productos, page });
   },
 
   accesorios: async (req, res) => {
@@ -39,7 +39,7 @@ const homeController = {
       order: [["nombre", "ASC"]],
     });
 
-    return res.render("accesorios", { productos, page });
+    return res.render("client/accesorios", { productos, page });
   },
 };
 

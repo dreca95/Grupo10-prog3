@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mascotero</title>
+    <link rel="stylesheet" href="/client/css/estilos.css" />
+  </head>
+
+  <body>
+    <div id="header"></div>
+
+    <div class="container">
+      <h2>Ingresá tu nombre:</h2>
+      <form id="bienvenidaForm">
+        <label style="display:none;">Ingresá tu nombre:</label><br />
+        <input type="text" id="nombre" name="nombre" required /><br />
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+
+    <button
+      type="button"
+      id="administradorBtn"
+      onclick="window.location.href='/admin/login'"
+    >
+      Administrador
+    </button>
+
+    <script src="/client/js/include.js"></script>
+    <script src="/client/js/cart.js"></script>
+    <script>
+      __include("#header", "/client/partials/header.html").then(() => {
+        __cart.updateCartBadge();
+      });
+
+      document.getElementById("bienvenidaForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById("nombre").value.trim();
+        if (!nombre) return;
+
+        localStorage.setItem("cliente_nombre", nombre);
+        window.location.href = "/client/productos.html";
+      });
+    </script>
+  </body>
+</html>

@@ -46,7 +46,7 @@ function leerCookie(req, res) {
 
 function redirectBackoffice(res, tipo, mensaje) {
     setCookie(res, tipo, mensaje);
-    return res.redirect(303, "/backoffice");
+    return res.redirect(303, "/admin/backoffice");
 }
 
 const adminController = {
@@ -59,33 +59,33 @@ const adminController = {
             const admin = await Administrador.findOne({ where: { usuario } });
 
             if (!admin) {
-                return res.render("login", { error: "Usuario y/o Password incorrecto(s)." });
+                return res.render("admin/login", { error: "Usuario y/o Password incorrecto(s)." });
             }
 
             const coincide = await bcrypt.compare(password, admin.password);
 
             if (!coincide) {
-                return res.render("login", { error: "Usuario y/o Password incorrecto(s)." });
+                return res.render("admin/login", { error: "Usuario y/o Password incorrecto(s)." });
             }
 
             const { accesorios, alimentos } = await obtenerDatosBackoffice();
-            return res.render("indexBackoffice", { accesorios, alimentos });
+            return res.render("admin/indexBackoffice", { accesorios, alimentos });
         } catch (err) {
             console.error("Error en login:", err);
-            res.render("login", { error: "No se pudo conectar a la base de dato" });
+            res.render("admin/login", { error: "No se pudo conectar a la base de dato" });
         }
     },
 
 
     altaGet: (req, res) => {
-        return res.render("alta");
+        return res.render("admin/alta");
     },
 
 
     backofficeGet: async (req, res) => {
         const { accesorios, alimentos } = await obtenerDatosBackoffice();
         const cookie = leerCookie(req, res);
-        return res.render("indexBackoffice", {
+        return res.render("admin/indexBackoffice", {
             accesorios,
             alimentos,
             cookie
@@ -98,7 +98,7 @@ const adminController = {
         const precioNum = Number(precio);
 
         if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
-            return res.render("alta", { error: "El precio debe ser mayor a $0." });
+            return res.render("admin/alta", { error: "El precio debe ser mayor a $0." });
         }
 
         try {
@@ -118,7 +118,7 @@ const adminController = {
             return redirectBackoffice(res, "exito", `Producto ${nombre} agregado exitosamente`);
         } catch (err) {
             console.error("Error en alta:", err);
-            return res.render("alta", { error: "No se pudo guardar " });
+            return res.render("admin/alta", { error: "No se pudo guardar " });
         }
     },
 
@@ -138,7 +138,7 @@ const adminController = {
             const data = producto.toJSON();
             data.precio = precioParaInput(data.precio);
 
-            return res.render("edicion", { producto: data, tipo });
+            return res.render("admin/edicion", { producto: data, tipo });
         } catch (err) {
             console.error("Error en edición:", err);
             return redirectBackoffice(res, "error", "No se pudo editar.");
@@ -153,7 +153,7 @@ const adminController = {
         const producto = { id, nombre, precio: precioNum, descripcion };
 
         if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
-            return res.render("edicion", {
+            return res.render("admin/edicion", {
                 producto,
                 tipo: tipoNuevo,
                 error: "El precio debe ser mayor a $0."
@@ -189,7 +189,7 @@ const adminController = {
 
             return redirectBackoffice(res, "exito", `Producto "${nombre}" editado con éxito`);
         } catch (err) {
-            return res.render("edicion", {
+            return res.render("admin/edicion", {
                 producto,
                 tipo: tipoNuevo,
                 error: "No se pudo guardar "

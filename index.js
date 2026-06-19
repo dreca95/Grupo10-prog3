@@ -12,21 +12,25 @@ dotenv.config();
 const app = express(); // Instancia de la aplicación Express
 const PORT = process.env.PORT; // Obtiene el puerto desde las variables de entorno (.env)
 
-app.use("/api", apiRouter); // Activa las rutas importadas desde apiRoutes.js
 app.use(express.json()); // Habilita el uso de datos JSON en las solicitudes
 app.use(express.urlencoded({ extended: true })); // Habilita el uso de datos URL en las solicitudes
 app.use(cookieParser());
+app.use("/api", apiRouter); // Activa las rutas importadas desde apiRoutes.js
 
 // Configuración
 app.set("view engine", "ejs"); // Configura EJS como motor de vistas de la aplicación
+app.set("views", "./views"); // Base de vistas
 app.use(express.static("public")); // Habilita el uso de archivos estáticos (css, imágenes, js) desde "public"
-app.use(homeRouter); // Registra y activa las rutas importadas desde homeRoutes.js
+
+// Frontend estático (proyecto separado)
+app.use("/client", express.static("client"));
+
+app.use(homeRouter); // (sin rutas cliente EJS)
 app.use(adminRouter); // Registra y activa las rutas importadas desde adminRoutes.js
 
-// Define la ruta raíz ("/")
+// Home final: frontend estático
 app.get("/", (req, res) => {
-    // Renderiza la vista index.ejs cuando se accede a la página principal
-    res.render("index");
+    res.sendFile("index.html", { root: "./client" });
 });
 
 
