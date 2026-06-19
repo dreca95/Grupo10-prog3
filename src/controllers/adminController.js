@@ -1,13 +1,32 @@
 import Alimento from "../models/alimentos.js";
 import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
+import Venta from "../models/ventas.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 import { generarJWT, guardarToken, obtenerToken, verificarJWT, borrarToken } from "../utils/jwt.js";
 
-function precioParaInput(precio) {
-    const num = Number(String(precio).replace(/[^0-9.-]/g, ""));
+function precioANumero(precio) {
+    if (typeof precio === "number" && Number.isFinite(precio)) return precio;
+    if (precio == null) return 0;
+
+    let s = String(precio).trim().replace(/\$/g, "");
+    if (s.includes(",") && s.includes(".")) {
+        s = s.replace(/,/g, "");
+    } else if (s.includes(",") && !s.includes(".")) {
+        s = s.replace(",", ".");
+    }
+
+    const num = Number(s);
     return Number.isNaN(num) ? 0 : num;
+}
+
+function formatearPrecio(precio) {
+    const num = precioANumero(precio);
+    return "$ " + num.toLocaleString("es-AR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
 
@@ -83,6 +102,23 @@ const adminController = {
         });
     },
 
+    ventasGet: async (req, res) => {
+        try {
+            const rows = await Venta.findAll({
+                order: [["id", "DESC"]],
+                raw: true
+            });
+            const ventas = rows.map((v) => ({
+                ...v,
+                precioFormateado: formatearPrecio(v.precio)
+            }));
+            return res.render("admin/ventas", { ventas });
+        } catch (err) {
+            console.error("Error en ventas:", err);
+            return redirigirBackoffice(res, "error", "No se pudieron cargar las ventas");
+        }
+    },
+
 
     altaPost: async (req, res) => {
         const { tipo, nombre, descripcion, precioNum } = req.body;
@@ -122,7 +158,7 @@ const adminController = {
             }
 
             const data = producto.toJSON();
-            data.precio = precioParaInput(data.precio);
+            data.precio = precioANumero(data.precio);
 
             return res.render("admin/edicion", { producto: data, tipo });
         } catch (err) {

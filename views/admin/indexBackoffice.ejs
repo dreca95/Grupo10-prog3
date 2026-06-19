@@ -18,6 +18,12 @@
                 <p class="<%= cookie.tipo === 'exito' ? 'exito' : 'error' %>"><%= cookie.mensaje %></p>
             <% } %>
 
+            <div class="backofficeAcciones">
+                <button type="button" class="agregarBtn" onclick="window.location.href='/admin/alta'">Agregar
+                    Producto</button>
+                <button type="button" class="verVentasBtn" onclick="window.location.href='/admin/ventas'">Ver ventas</button>
+            </div>
+
             <div class="backofficeColumnas">
                 <section class="backSection">
                     <h3>Accesorios</h3>
@@ -106,11 +112,6 @@
                             <p>No hay alimentos cargados.</p>
                             <% } %>
                 </section>
-            </div>
-
-            <div>
-                <button type="button" class="agregarBtn btn btn-primary" onclick="window.location.href='/admin/alta'">Agregar
-                    Producto</button>
             </div>
 
         </div>

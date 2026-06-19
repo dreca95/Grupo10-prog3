@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas - Mascotero</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+</head>
+
+<body>
+
+    <%- include('../partials/header') %>
+
+        <div class="backofficeContainer">
+            <div class="ventasEncabezado">
+                <button type="button" class="volverBtn" onclick="window.location.href='/admin/backoffice'">Volver al backoffice</button>
+                <h2>Ventas</h2>
+            </div>
+
+            <% if (ventas && ventas.length) { %>
+                <div class="ventasTabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Productos</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% ventas.forEach(v => { %>
+                                <tr>
+                                    <td><%= v.id %></td>
+                                    <td><%= v.cliente %></td>
+                                    <td><%= v.descripcion %></td>
+                                    <td><%= v.cantidad %></td>
+                                    <td><%= v.precioFormateado %></td>
+                                    <td><%= new Date(v.fecha).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" }) %></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <p>No hay ventas registradas.</p>
+            <% } %>
+        </div>
+
+</body>
+
+</html>

@@ -8,6 +8,7 @@ router.get("/admin/login", adminController.loginGet);
 router.post("/admin/login", validarLogin, adminController.loginPost);
 
 router.get("/admin/backoffice", verificarAdmin, adminController.backofficeGet);
+router.get("/admin/ventas", verificarAdmin, adminController.ventasGet);
 
 router.get("/admin/alta", verificarAdmin, adminController.altaGet);
 router.post("/admin/productos/alta", verificarAdmin, validarProducto, adminController.altaPost);

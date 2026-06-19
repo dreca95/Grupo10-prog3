@@ -6,20 +6,6 @@ import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
 import crypto from "crypto";
 
-const normalizeProducto = (p) => {
-  const raw = p?.toJSON ? p.toJSON() : p;
-  // A veces Postgres devuelve DECIMAL como string
-  const precio =
-    typeof raw.precio === "string"
-      ? Number(raw.precio.replace(",", "."))
-      : Number(raw.precio);
-
-  return {
-    ...raw,
-    precio: Number.isFinite(precio) ? precio : 0
-  };
-};
-
 function parseMoneyToNumber(v) {
   if (typeof v === "number") return v;
   if (!v) return 0;
