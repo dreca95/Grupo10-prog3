@@ -37,22 +37,29 @@ function parseMoneyToNumber(v) {
 }
 
 const getAccesorios = async (req, res) => {
-  const rows = await Accesorio.findAll({
-    where: { estado: true },
-    order: [["nombre", "ASC"]],
-    raw: true
-  });
-  // con raw:true evitamos getters raros; y además parseamos si viene con $
-  res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
+  try {
+    const rows = await Accesorio.findAll({
+      where: { estado: true },
+      order: [["nombre", "ASC"]],
+      raw: true
+    });
+    return res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
+  } catch (e) {
+    return res.status(500).json({ error: "error al obtener accesorios", details: e.message });
+  }
 };
 
 const getAlimentos = async (req, res) => {
-  const rows = await Alimento.findAll({
-    where: { estado: true },
-    order: [["nombre", "ASC"]],
-    raw: true
-  });
-  res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
+  try {
+    const rows = await Alimento.findAll({
+      where: { estado: true },
+      order: [["nombre", "ASC"]],
+      raw: true
+    });
+    return res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
+  } catch (e) {
+    return res.status(500).json({ error: "error al obtener alimentos", details: e.message });
+  }
 };
 
 // Token en memoria para que NO se pueda descargar PDF sin haber comprado.

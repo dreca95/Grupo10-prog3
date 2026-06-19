@@ -59,6 +59,16 @@ app.get("/", (req, res) => {
 })();
 
 
+app.use((err, req, res, next) => {
+    if (!req.originalUrl.startsWith("/api")) {
+        return next(err);
+    }
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        return res.status(400).json({ error: "JSON inválido" });
+    }
+    return res.status(500).json({ error: "error interno", details: err.message });
+});
+
 // Inicia el servidor
 app.listen(PORT || 3000, () => {
     console.log(`Servidor corriendo en el puerto ${PORT} - ${new Date().toLocaleTimeString()}`);
