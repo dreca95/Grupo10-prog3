@@ -24,11 +24,14 @@ header {
 
 /* Logo */
 .logo {
-    background: white;
-    color: #2e7d32;
-    padding: 10px 15px;
-    font-weight: bold;
-    border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 70px;
+    width: auto;
+    display: block;
 }
 
 /* Título */
