@@ -11,6 +11,7 @@ const adminProtegido = express.Router();
 adminProtegido.use(verificarAdmin);
 
 adminProtegido.get("/backoffice", adminController.backofficeGet);
+adminProtegido.post("/logout", adminController.logoutPost);
 adminProtegido.get("/ventas", adminController.ventasGet);
 adminProtegido.get("/alta", adminController.altaGet);
 adminProtegido.post("/productos/alta", validarProducto, validarProductoDuplicado, adminController.altaPost);

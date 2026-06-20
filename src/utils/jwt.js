@@ -1,4 +1,8 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+// Cambia en cada reinicio del servidor: invalida tokens emitidos antes.
+const SERVER_SESSION_ID = crypto.randomBytes(16).toString("hex");
 
 // Clave secreta para firmar (debe ser Uint8Array)
 const secret = new TextEncoder().encode(
@@ -7,7 +11,7 @@ const secret = new TextEncoder().encode(
 
 
 export async function generarJWT(payload) {
-    const token = jwt.sign(payload, secret, {
+    const token = jwt.sign({ ...payload, sid: SERVER_SESSION_ID }, secret, {
         expiresIn: "5m",
         algorithm: "HS256"
     });
@@ -18,6 +22,10 @@ export async function generarJWT(payload) {
 export async function verificarJWT(token) {
     try {
         const payload = jwt.verify(token, secret);
+        if (payload.sid !== SERVER_SESSION_ID) {
+            console.log("Token invalido: sesion de servidor anterior");
+            return null;
+        }
         return payload;
     } catch (e) {
         console.log("Firma invalida o Token Expirado");

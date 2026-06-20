@@ -1,18 +1,34 @@
 import { redirigirBackofficeError } from "../utils/cookies.js";
 import { borrarToken, obtenerToken, verificarJWT } from "../utils/jwt.js";
+import { baseDeDatosDisponible } from "../services/authService.js";
 import { obtenerProductoPorId, productoYaExiste, modeloPorTipo } from "../services/productoService.js";
 import { esValido, parsePrecio, renderErrorProducto } from "../utils/adminProducto.js";
 
-export async function verificarAdmin(req, res, next) {
+async function sesionAdminValida(req, res) {
     const token = obtenerToken(req);
 
     if (!token) {
-        return res.redirect("/admin/login");
+        return null;
     }
 
     const payload = await verificarJWT(token);
     if (!payload) {
         borrarToken(res);
+        return null;
+    }
+
+    if (!(await baseDeDatosDisponible())) {
+        borrarToken(res);
+        return null;
+    }
+
+    return payload;
+}
+
+export async function verificarAdmin(req, res, next) {
+    const payload = await sesionAdminValida(req, res);
+
+    if (!payload) {
         return res.redirect("/admin/login");
     }
 
@@ -21,14 +37,10 @@ export async function verificarAdmin(req, res, next) {
 }
 
 export async function redirigirSiAdminLogueado(req, res, next) {
-    const token = obtenerToken(req);
+    const payload = await sesionAdminValida(req, res);
 
-    if (token) {
-        const payload = await verificarJWT(token);
-        if (payload) {
-            return res.redirect("/admin/backoffice");
-        }
-        borrarToken(res);
+    if (payload) {
+        return res.redirect("/admin/backoffice");
     }
 
     next();

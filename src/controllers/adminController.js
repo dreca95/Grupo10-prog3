@@ -4,7 +4,7 @@ import Administrador from "../models/administradores.js";
 import Venta from "../models/ventas.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
-import { generarJWT, guardarToken } from "../utils/jwt.js";
+import { generarJWT, guardarToken, borrarToken } from "../utils/jwt.js";
 import { precioANumero, formatearPrecio } from "../utils/precio.js";
 import { obtenerDatosBackoffice } from "../services/backofficeService.js";
 
@@ -40,6 +40,12 @@ const adminController = {
             console.error("Error en login:", err);
             res.render("admin/login", { error: "No se pudo conectar a la base de dato" });
         }
+    },
+
+
+    logoutPost: (req, res) => {
+        borrarToken(res);
+        return res.redirect("/admin/login");
     },
 
 

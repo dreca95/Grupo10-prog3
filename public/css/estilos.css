@@ -424,16 +424,15 @@ button:hover {
 
 .backofficeAcciones {
     margin-bottom: 30px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
     gap: 20px;
 }
 
 .backofficeAcciones .agregarBtn,
-.backofficeAcciones .verVentasBtn {
-    flex: 1;
+.backofficeAcciones .verVentasBtn,
+.backofficeAcciones .logoutBtn {
     max-width: 300px;
     padding: 18px 36px;
     margin-top: 0;
@@ -442,17 +441,42 @@ button:hover {
     letter-spacing: 0.5px;
     text-transform: uppercase;
     border-radius: 12px;
-  
+
 }
 
 .backofficeAcciones .agregarBtn {
+    justify-self: start;
     background: linear-gradient(135deg, #2e7d32, #1b5e20);
     color: white;
 }
 
 .backofficeAcciones .verVentasBtn {
+    justify-self: center;
     background: #a5d6a7;
     color: #000;
+}
+
+.backofficeAcciones .logoutForm {
+    justify-self: end;
+    margin: 0;
+}
+
+.backofficeAcciones .logoutBtn {
+    background: linear-gradient(135deg, #e53935, #c62828);
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .backofficeAcciones {
+        grid-template-columns: 1fr;
+    }
+
+    .backofficeAcciones .agregarBtn,
+    .backofficeAcciones .verVentasBtn,
+    .backofficeAcciones .logoutForm {
+        justify-self: stretch;
+        max-width: 100%;
+    }
 }
 
 .ventasEncabezado {
@@ -492,18 +516,6 @@ button:hover {
     .volverBtn {
         position: static;
         align-self: flex-start;
-    }
-}
-
-@media (max-width: 600px) {
-    .backofficeAcciones {
-        flex-direction: column;
-    }
-
-    .backofficeAcciones .agregarBtn,
-    .backofficeAcciones .verVentasBtn {
-        max-width: 100%;
-        width: 100%;
     }
 }
 
