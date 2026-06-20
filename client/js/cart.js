@@ -15,17 +15,13 @@ function saveCart(cart) {
   window.dispatchEvent(new Event("cart:updated"));
 }
 
-function parsePrice(p) {
-  if (typeof p === "string") return Number(p.replace(",", "."));
-  return Number(p);
-}
 
 function normalizeItem(item) {
   return {
     tipo: item.tipo,
     id: Number(item.id),
     nombre: item.nombre,
-    precio: parsePrice(item.precio),
+    precio: __utils.ConvertirTextoMoneyANumero(item.precio),
     descripcion: item.descripcion ?? "",
     img: item.img ?? "/client/img/1.png",
     cantidad: Number(item.cantidad) || 0
@@ -91,7 +87,10 @@ function getTotalCount() {
 function getTotalPrice() {
   const cart = loadCart();
   return cart.items.reduce(
-    (acc, it) => acc + (Number(it.cantidad) || 0) * (parsePrice(it.precio) || 0),
+    (acc, it) =>
+      acc +
+      (Number(it.cantidad) || 0) *
+        (__utils.ConvertirTextoMoneyANumero(it.precio) || 0),
     0
   );
 }

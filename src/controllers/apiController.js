@@ -1,10 +1,15 @@
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
 import Venta from "../models/ventas.js";
+import VentaProductos from "../models/ventaProductos.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
 import crypto from "crypto";
+import sequelize from "../config/database.js";
+
+
+const ITEMS_POR_PAGINA = 10;
 
 function parseMoneyToNumber(v) {
   if (typeof v === "number") return v;
@@ -23,26 +28,41 @@ function parseMoneyToNumber(v) {
 }
 
 const getAccesorios = async (req, res) => {
+
   try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = ITEMS_POR_PAGINA;
+    const offset = (page - 1) * ITEMS_POR_PAGINA;
+
     const rows = await Accesorio.findAll({
       where: { estado: true },
       order: [["nombre", "ASC"]],
+      limit,
+      offset,
       raw: true
     });
-    return res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
-  } catch (e) {
+
+    return res.json(rows);
+  }
+  catch (e) {
     return res.status(500).json({ error: "error al obtener accesorios", details: e.message });
   }
 };
 
 const getAlimentos = async (req, res) => {
   try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = ITEMS_POR_PAGINA;
+    const offset = (page - 1) * ITEMS_POR_PAGINA;
+
     const rows = await Alimento.findAll({
       where: { estado: true },
       order: [["nombre", "ASC"]],
+      limit,
+      offset,
       raw: true
     });
-    return res.json(rows.map((r) => ({ ...r, precio: parseMoneyToNumber(r.precio) })));
+    return res.json(rows);
   } catch (e) {
     return res.status(500).json({ error: "error al obtener alimentos", details: e.message });
   }
@@ -69,8 +89,7 @@ function validateTicketToken(ventaId, token) {
 }
 
 function money(n) {
-  const num = typeof n === "string" ? Number(n.replace(",", ".")) : Number(n);
-  const safe = Number.isFinite(num) ? num : 0;
+  const safe = parseMoneyToNumber(n);
   return safe.toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 }
 
@@ -94,45 +113,78 @@ function formatDateTime(value) {
   )}:${get("second")}`;
 }
 
-// POST /api/ventas
-// body: { cliente: string, items: [{nombre, precio, cantidad}] }
+// POST /api/ventas (guarda cabecera en VENTAS + detalle en VENTA_PRODUCTOS)
 const crearVenta = async (req, res) => {
-  try {
-    const { cliente, items } = req.body || {};
+  const t = await sequelize.transaction();
 
+  try {
+    // Validación básica del request
+    const { cliente, items } = req.body || {};
     if (!cliente || typeof cliente !== "string" || !cliente.trim()) {
+      await t.rollback();
       return res.status(400).json({ error: "cliente requerido" });
     }
     if (!Array.isArray(items) || items.length === 0) {
+      await t.rollback();
       return res.status(400).json({ error: "items requerido" });
     }
 
+    // Normalización + validación mínima para poder armar las FKs del detalle
     const clean = items
       .map((it) => ({
+        id: Number(it.id) || 0,
+        tipo: String(it.tipo ?? "").trim().toLowerCase(),
         nombre: String(it.nombre ?? "").trim(),
         precio: Number(it.precio) || 0,
         cantidad: Number(it.cantidad) || 0
       }))
-      .filter((it) => it.nombre && it.precio >= 0 && it.cantidad > 0);
+      .filter(
+        (it) =>
+          it.id > 0 &&
+          (it.tipo === "accesorio" || it.tipo === "alimento") &&
+          it.cantidad > 0 &&
+          it.precio >= 0
+      );
 
-    if (clean.length === 0) {
+    if (!clean.length) {
+      await t.rollback();
       return res.status(400).json({ error: "items inválidos" });
     }
 
-    const cantidadTotal = clean.reduce((acc, it) => acc + it.cantidad, 0);
-    const total = clean.reduce((acc, it) => acc + it.precio * it.cantidad, 0);
+    // Calcular totales para la cabecera (tabla VENTAS)
+    const cantidadTotal = clean.reduce((a, it) => a + it.cantidad, 0);
+    const total = clean.reduce((a, it) => a + it.precio * it.cantidad, 0);
+    const descripcion = clean
+      .map((it) => `${it.nombre} x${it.cantidad}`)
+      .join(", ");
 
-    const descripcion = clean.map((it) => `${it.nombre} x${it.cantidad}`).join(", ");
-
-    const venta = await Venta.create({
-      cliente: cliente.trim(),
-      descripcion,
-      precio: total,
-      cantidad: cantidadTotal,
-        // Guardar en UTC (recomendado). Luego se muestra en BA con formatDateTime()
+    // Insert cabecera (tabla VENTAS)
+    const venta = await Venta.create(
+      {
+        cliente: cliente.trim(),
+        descripcion,
+        precio: total,
+        cantidad: cantidadTotal,
         fecha: new Date()
-    });
+      },
+      { transaction: t }
+    );
 
+    // Insert detalle (tabla VENTA_PRODUCTOS)
+    const detalle = clean.map((it) => ({
+      id_venta: venta.id,
+      id_accesorio: it.tipo === "accesorio" ? it.id : null,
+      id_alimento: it.tipo === "alimento" ? it.id : null,
+      cantidad: it.cantidad,
+      precio_total: it.precio * it.cantidad
+    }));
+
+    await VentaProductos.bulkCreate(detalle, { transaction: t });
+
+    // Confirmar todo junto: si falla algo antes, no queda nada guardado
+    await t.commit();
+
+    // Gestión de ticket
     const token = createTicketToken(venta.id);
 
     return res.json({
@@ -149,9 +201,14 @@ const crearVenta = async (req, res) => {
       }
     });
   } catch (e) {
-    return res.status(500).json({ error: "error al crear venta", details: e.message });
+    await t.rollback();
+    return res.status(500).json({
+      error: "error al crear venta",
+      details: e.message
+    });
   }
 };
+
 
 // GET /api/ventas/:id
 const getVenta = async (req, res) => {

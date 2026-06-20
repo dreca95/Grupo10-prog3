@@ -1,49 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Productos - Mascotero</title>
-    <link rel="stylesheet" href="/client/css/estilos.css" />
-  </head>
 
-  <body>
-    <div id="header"></div>
+<head>
+  <meta charset="UTF-8" />
+  <title>Productos - Mascotero</title>
+  <link rel="stylesheet" href="/client/css/estilos.css" />
+</head>
 
-    <div class="container productos-container">
-      <h2 id="bienvenidaTexto" style="margin: 0 0 18px 0;"></h2>
+<body>
+  <div id="header"></div>
 
-      <div class="categorias">
-        <button
-          type="button"
-          class="categoria-btn"
-          onclick="window.location.href='/client/alimentos.html'"
-        >
-          Alimentos
-        </button>
-        <button
-          type="button"
-          class="categoria-btn"
-          onclick="window.location.href='/client/accesorios.html'"
-        >
-          Accesorios
-        </button>
-      </div>
+  <div class="container productos-container">
+    <h2 id="bienvenidaTexto" style="margin: 0 0 18px 0;"></h2>
+
+    <div class="categorias">
+      <button type="button" class="categoria-btn" onclick="window.location.href='/client/alimentos.html'">
+        Alimentos
+      </button>
+      <button type="button" class="categoria-btn" onclick="window.location.href='/client/accesorios.html'">
+        Accesorios
+      </button>
     </div>
+  </div>
 
-    <script src="/client/js/include.js"></script>
-    <script src="/client/js/cart.js"></script>
-    <script>
-      __include("#header", "/client/partials/header.html").then(() => {
-        __cart.updateCartBadge();
+  <script src="/client/js/include.js"></script>
+  <script src="/client/js/cart.js"></script>
+  <script>
+    __include("#header", "/client/partials/header.html").then(() => {
+      __cart.updateCartBadge();
 
-        const nombre = (localStorage.getItem("cliente_nombre") || "").trim();
-        const el = document.getElementById("bienvenidaTexto");
-        if (el && nombre) {
-          el.innerHTML = `Bienvenido, ${nombre}.<br />Elegí una categoría`;
-        } else if (el) {
-          el.innerHTML = "Elegí una categoría";
-        }
-      });
-    </script>
-  </body>
+      const nombre = (localStorage.getItem("cliente_nombre") || "").trim();
+      const el = document.getElementById("bienvenidaTexto");
+      if (el && nombre) {
+        el.innerHTML = `Bienvenido, ${nombre}.<br />Elegí una categoría`;
+      } else if (el) {
+        el.innerHTML = "Elegí una categoría";
+      }
+    });
+  </script>
+</body>
+
 </html>
