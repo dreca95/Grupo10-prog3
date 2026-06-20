@@ -1,18 +1,7 @@
 import { redirigirBackofficeError } from "../utils/cookies.js";
 import { borrarToken, obtenerToken, verificarJWT } from "../utils/jwt.js";
-
-const TIPOS = ["accesorio", "alimento"];
-function esValido(tipo) {
-    return TIPOS.includes(tipo);
-}
-
-function parsePrecio(precio) {
-    const precioNum = Number(precio);
-    if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
-        return null;
-    }
-    return precioNum;
-}
+import { obtenerProductoPorId, productoYaExiste, modeloPorTipo } from "../services/productoService.js";
+import { esValido, parsePrecio, renderErrorProducto } from "../utils/adminProducto.js";
 
 export async function verificarAdmin(req, res, next) {
     const token = obtenerToken(req);
@@ -31,6 +20,20 @@ export async function verificarAdmin(req, res, next) {
     next();
 }
 
+export async function redirigirSiAdminLogueado(req, res, next) {
+    const token = obtenerToken(req);
+
+    if (token) {
+        const payload = await verificarJWT(token);
+        if (payload) {
+            return res.redirect("/admin/backoffice");
+        }
+        borrarToken(res);
+    }
+
+    next();
+}
+
 export function validarLogin(req, res, next) {
     const usuario = String(req.body.usuario ?? "").trim();
     const password = String(req.body.password ?? "").trim();
@@ -44,26 +47,6 @@ export function validarLogin(req, res, next) {
     req.body.usuario = usuario;
     req.body.password = password;
     next();
-}
-
-function renderErrorProducto(req, res, error) {
-    const { tipo, nombre, precio, descripcion } = req.body;
-    const id = req.params.id;
-
-    if (id) {
-        return res.render("admin/edicion", {
-            producto: {
-                id,
-                nombre: String(nombre ?? "").trim(),
-                precio: Number(precio) || 0,
-                descripcion: String(descripcion ?? "").trim()
-            },
-            tipo,
-            error
-        });
-    }
-
-    return res.render("admin/alta", { error });
 }
 
 export function validarProducto(req, res, next) {
@@ -94,6 +77,24 @@ export function validarProducto(req, res, next) {
     next();
 }
 
+export async function validarProductoDuplicado(req, res, next) {
+    try {
+        const { tipo, nombre } = req.body;
+        const tipoOriginal = req.params.tipo;
+        const id = req.params.id;
+
+        const excluirId = id != null && tipoOriginal === tipo ? Number(id) : null;
+
+        if (await productoYaExiste(tipo, nombre, excluirId)) {
+            return renderErrorProducto(req, res, "El producto ya está guardado.");
+        }
+
+        next();
+    } catch (err) {
+        return renderErrorProducto(req, res, "No se pudo validar el producto.");
+    }
+}
+
 export function validarTipoIdParams(req, res, next) {
     const { tipo, id } = req.params;
     const idNum = Number(id);
@@ -103,4 +104,40 @@ export function validarTipoIdParams(req, res, next) {
     }
 
     next();
+}
+
+export async function validarProductoParaBaja(req, res, next) {
+    try {
+        const { tipo, id } = req.params;
+        const producto = await obtenerProductoPorId(tipo, id);
+
+        if (!producto || producto.estado === false) {
+            return redirigirBackofficeError(res, "No se pudo dar de baja ");
+        }
+
+        req.producto = producto;
+        req.productoModel = modeloPorTipo(tipo);
+        next();
+    } catch (err) {
+        console.error("Error al validar baja de producto:", err);
+        return redirigirBackofficeError(res, "No se pudo dar de baja el producto");
+    }
+}
+
+export async function validarProductoParaActivar(req, res, next) {
+    try {
+        const { tipo, id } = req.params;
+        const producto = await obtenerProductoPorId(tipo, id);
+
+        if (!producto || producto.estado !== false) {
+            return redirigirBackofficeError(res, "No se pudo activar.");
+        }
+
+        req.producto = producto;
+        req.productoModel = modeloPorTipo(tipo);
+        next();
+    } catch (err) {
+        console.error("Error al validar activación de producto:", err);
+        return redirigirBackofficeError(res, "No se pudo activar el producto");
+    }
 }

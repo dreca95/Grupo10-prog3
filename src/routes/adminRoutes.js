@@ -1,23 +1,24 @@
 import express from "express";
 import adminController from "../controllers/adminController.js";
-import {validarLogin, validarProducto, validarTipoIdParams, verificarAdmin} from "../middlewares/adminMiddlewares.js";
+import {validarLogin, validarProducto, validarProductoDuplicado, validarProductoParaActivar, validarProductoParaBaja, validarTipoIdParams, verificarAdmin, redirigirSiAdminLogueado} from "../middlewares/adminMiddlewares.js";
 
 const router = express.Router();
 
-router.get("/admin/login", adminController.loginGet);
+router.get("/admin/login", redirigirSiAdminLogueado, adminController.loginGet);
 router.post("/admin/login", validarLogin, adminController.loginPost);
 
-router.get("/admin/backoffice", verificarAdmin, adminController.backofficeGet);
-router.get("/admin/ventas", verificarAdmin, adminController.ventasGet);
+const adminProtegido = express.Router();
+adminProtegido.use(verificarAdmin);
 
-router.get("/admin/alta", verificarAdmin, adminController.altaGet);
-router.post("/admin/productos/alta", verificarAdmin, validarProducto, adminController.altaPost);
+adminProtegido.get("/backoffice", adminController.backofficeGet);
+adminProtegido.get("/ventas", adminController.ventasGet);
+adminProtegido.get("/alta", adminController.altaGet);
+adminProtegido.post("/productos/alta", validarProducto, validarProductoDuplicado, adminController.altaPost);
+adminProtegido.get("/edicion/:tipo/:id", validarTipoIdParams, adminController.edicionGet);
+adminProtegido.post("/productos/edicion/:tipo/:id",validarTipoIdParams,validarProducto,validarProductoDuplicado,adminController.edicionPost);
+adminProtegido.post("/productos/baja/:tipo/:id", validarTipoIdParams, validarProductoParaBaja, adminController.bajaPost);
+adminProtegido.post("/productos/activar/:tipo/:id", validarTipoIdParams, validarProductoParaActivar, adminController.activarPost);
 
-router.get("/admin/edicion/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.edicionGet);
-router.post(
-    "/admin/productos/edicion/:tipo/:id", verificarAdmin, validarTipoIdParams, validarProducto, adminController.edicionPost);
-
-router.post("/admin/productos/baja/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.bajaPost);
-router.post("/admin/productos/activar/:tipo/:id", verificarAdmin, validarTipoIdParams, adminController.activarPost);
+router.use("/admin", adminProtegido);
 
 export default router;

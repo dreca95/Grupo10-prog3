@@ -4,21 +4,13 @@ import Administrador from "../models/administradores.js";
 import Venta from "../models/ventas.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
-import { generarJWT, guardarToken, obtenerToken, verificarJWT, borrarToken } from "../utils/jwt.js";
+import { generarJWT, guardarToken } from "../utils/jwt.js";
 import { precioANumero, formatearPrecio } from "../utils/precio.js";
 import { obtenerDatosBackoffice } from "../services/backofficeService.js";
 
 const adminController = {
 
-    loginGet: async (req, res) => {
-        const token = obtenerToken(req);
-        if (token) {
-            const payload = await verificarJWT(token);
-            if (payload) {
-                return res.redirect("/admin/backoffice");
-            }
-            borrarToken(res);
-        }
+    loginGet: (req, res) => {
         return res.render("admin/login");
     },
 
@@ -176,19 +168,11 @@ const adminController = {
 
  
     bajaPost: async (req, res) => {
-        const { tipo, id } = req.params;
-
+        const { id } = req.params;
+        const { producto, productoModel } = req;
 
         try {
-            const Model = tipo === "accesorio" ? Accesorio : Alimento;
-            const producto = await Model.findByPk(id);
-
-            if (!producto || producto.estado === false) {
-                return redirigirBackoffice(res, "error", "No se pudo dar de baja ");
-            }
-
-            await Model.update({ estado: false }, { where: { id } });
-
+            await productoModel.update({ estado: false }, { where: { id } });
             return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" eliminado con éxito`);
         } catch (err) {
             return redirigirBackoffice(res, "error", "No se pudo dar de baja el producto");
@@ -196,18 +180,11 @@ const adminController = {
     },
 
     activarPost: async (req, res) => {
-        const { tipo, id } = req.params;
+        const { id } = req.params;
+        const { producto, productoModel } = req;
 
         try {
-            const Model = tipo === "accesorio" ? Accesorio : Alimento;
-            const producto = await Model.findByPk(id);
-
-            if (!producto || producto.estado !== false) {
-                return redirigirBackoffice(res, "error", "No se pudo activar.");
-            }
-
-            await Model.update({ estado: true }, { where: { id } });
-
+            await productoModel.update({ estado: true }, { where: { id } });
             return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" activado con éxito`);
         } catch (err) {
             return redirigirBackoffice(res, "error", "No se pudo activar el producto");
