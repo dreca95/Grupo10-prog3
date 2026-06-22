@@ -1,12 +1,12 @@
 import Alimento from "../models/alimentos.js";
 import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
-import Venta from "../models/ventas.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 import { generarJWT, guardarToken, borrarToken } from "../utils/jwt.js";
-import { precioANumero, formatearPrecio } from "../utils/precio.js";
+import { precioANumero } from "../utils/precio.js";
 import { obtenerDatosBackoffice } from "../services/backofficeService.js";
+import { obtenerDatosVentas } from "../services/ventasService.js";
 import { copiarImagenProducto, eliminarImagenLocal, guardarImagenLocal } from "../services/imagenProductoService.js";
 
 const adminController = {
@@ -56,26 +56,27 @@ const adminController = {
 
 
     backofficeGet: async (req, res) => {
-        const { accesorios, alimentos } = await obtenerDatosBackoffice();
+        const datos = await obtenerDatosBackoffice(req.query);
         const cookie = leerCookie(req, res);
+
         return res.render("admin/indexBackoffice", {
-            accesorios,
-            alimentos,
+            accesorios: datos.accesorios,
+            alimentos: datos.alimentos,
+            pagAcc: datos.pagAcc,
+            pagAli: datos.pagAli,
+            buscarAcc: datos.buscarAcc,
+            buscarAli: datos.buscarAli,
             cookie
         });
     },
 
     ventasGet: async (req, res) => {
         try {
-            const rows = await Venta.findAll({
-                order: [["id", "DESC"]],
-                raw: true
+            const datos = await obtenerDatosVentas(req.query);
+            return res.render("admin/ventas", {
+                ventas: datos.ventas,
+                pagVen: datos.pagVen
             });
-            const ventas = rows.map((v) => ({
-                ...v,
-                precioFormateado: formatearPrecio(v.precio)
-            }));
-            return res.render("admin/ventas", { ventas });
         } catch (err) {
             console.error("Error en ventas:", err);
             return redirigirBackoffice(res, "error", "No se pudieron cargar las ventas");

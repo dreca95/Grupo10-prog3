@@ -1,0 +1,26 @@
+<%
+  function urlPagina(primera, ultima) {
+    const partes = [
+      "primera" + prefijo + "=" + primera,
+      "ultima" + prefijo + "=" + ultima,
+      "primera" + otroPrefijo + "=" + otraPrimera,
+      "ultima" + otroPrefijo + "=" + otraUltima
+    ];
+    if (buscarAcc) partes.push("buscarAcc=" + encodeURIComponent(buscarAcc));
+    if (buscarAli) partes.push("buscarAli=" + encodeURIComponent(buscarAli));
+    return "/admin/backoffice?" + partes.join("&");
+  }
+%>
+<div class="pagination">
+  <% if (hayAnterior) { %>
+    <a href="<%= urlPagina(antPrimera, antUltima) %>" class="pagBtn">Anterior</a>
+  <% } else { %>
+    <a href="#" class="pagBtn disabled">Anterior</a>
+  <% } %>
+  <span>Página <%= numPagina %></span>
+  <% if (haySiguiente) { %>
+    <a href="<%= urlPagina(sigPrimera, sigUltima) %>" class="pagBtn">Siguiente</a>
+  <% } else { %>
+    <a href="#" class="pagBtn disabled">Siguiente</a>
+  <% } %>
+</div>

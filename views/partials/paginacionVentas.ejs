@@ -1,0 +1,18 @@
+<%
+  function urlPagina(primera, ultima) {
+    return "/admin/ventas?primeraVen=" + primera + "&ultimaVen=" + ultima;
+  }
+%>
+<div class="pagination">
+  <% if (hayAnterior) { %>
+    <a href="<%= urlPagina(antPrimera, antUltima) %>" class="pagBtn">Anterior</a>
+  <% } else { %>
+    <a href="#" class="pagBtn disabled">Anterior</a>
+  <% } %>
+  <span>Página <%= numPagina %></span>
+  <% if (haySiguiente) { %>
+    <a href="<%= urlPagina(sigPrimera, sigUltima) %>" class="pagBtn">Siguiente</a>
+  <% } else { %>
+    <a href="#" class="pagBtn disabled">Siguiente</a>
+  <% } %>
+</div>

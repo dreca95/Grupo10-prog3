@@ -30,100 +30,158 @@
             <div class="backofficeColumnas">
                 <section class="backSection">
                     <h3>Accesorios</h3>
-                    <% if (accesorios && accesorios.length) { %>
-                        <div class="productosGrid">
-                            <% accesorios.forEach(a=> { %>
-                                <div class="productoCard<%= a.estado === false ? ' inactivo' : '' %>">
-                                    <% if (a.estado === false) { %>
-                                        <span class="estadoInactivo">INACTIVO</span>
-                                    <% } %>
-                                    <% if (a.imagen) { %>
-                                        <img src="<%= a.imagen %>" alt="<%= a.nombre %>" class="miniaturaProductoAdmin" />
-                                    <% } else { %>
-                                        <div class="sinImagenProductoAdmin">Sin imagen</div>
-                                    <% } %>
-                                    <div class="productoInfo">
-                                        <strong>
-                                            <%= a.nombre %>
-                                        </strong>
-                                        <p>Precio: <%= a.precio %>
-                                        </p>
-                                        <% if (a.descripcion) { %>
-                                            <p>
-                                                Descripción: <%= a.descripcion %>
-                                            </p>
-                                            <% } %>
-                                    </div>
-                                    <div class="productoActions">
-                                        <% if (a.estado === false) { %>
-                                            <form action="/admin/productos/activar/accesorio/<%= a.id %>" method="post"
-                                                class="activarForm">
-                                                <button type="submit" class="productoBtn activarBtn">Activar</button>
-                                            </form>
-                                        <% } else { %>
-                                            <button type="button" class="productoBtn editarBtn"
-                                                onclick="window.location.href='/admin/edicion/accesorio/<%= a.id %>'">Editar</button>
-                                            <form action="/admin/productos/baja/accesorio/<%= a.id %>" method="post"
-                                                class="bajaForm">
-                                                <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
-                                            </form>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <% }) %>
-                        </div>
+                    <% if (!pagAcc.totalInventario) { %>
+                        <p>No hay accesorios cargados.</p>
+                    <% } else { %>
+                        <%
+                            let urlLimpiarAcc = "/admin/backoffice?primeraAli=" + pagAli.primera + "&ultimaAli=" + pagAli.ultima;
+                            if (buscarAli) urlLimpiarAcc += "&buscarAli=" + encodeURIComponent(buscarAli);
+                        %>
+                        <%- include('../partials/busquedaSeccionAdmin', {
+                            actionUrl: "/admin/backoffice",
+                            idInput: "buscarAccInput",
+                            nombreCampo: "buscarAcc",
+                            valor: buscarAcc,
+                            labelText: "Buscar por nombre",
+                            placeholder: "Nombre del producto...",
+                            otroPrefijo: "Ali",
+                            otraPrimera: pagAli.primera,
+                            otraUltima: pagAli.ultima,
+                            otroBuscar: buscarAli,
+                            urlLimpiar: urlLimpiarAcc
+                        }) %>
+                        <% if (!pagAcc.total) { %>
+                            <p class="sinCoincidenciasBusqueda">No hay coincidencias en accesorios.</p>
                         <% } else { %>
-                            <p>No hay accesorios cargados.</p>
-                            <% } %>
+                            <div class="productosGrid">
+                                <% accesorios.forEach(a=> { %>
+                                    <div class="productoCard<%= a.estado === false ? ' inactivo' : '' %>">
+                                        <% if (a.estado === false) { %>
+                                            <span class="estadoInactivo">INACTIVO</span>
+                                        <% } %>
+                                        <% if (a.imagen) { %>
+                                            <img src="<%= a.imagen %>" alt="<%= a.nombre %>" class="miniaturaProductoAdmin" />
+                                        <% } else { %>
+                                            <div class="sinImagenProductoAdmin">Sin imagen</div>
+                                        <% } %>
+                                        <div class="productoInfo">
+                                            <strong><%= a.nombre %></strong>
+                                            <p>Precio: <%= a.precio %></p>
+                                            <% if (a.descripcion) { %>
+                                                <p>Descripción: <%= a.descripcion %></p>
+                                            <% } %>
+                                        </div>
+                                        <div class="productoActions">
+                                            <% if (a.estado === false) { %>
+                                                <form action="/admin/productos/activar/accesorio/<%= a.id %>" method="post" class="activarForm">
+                                                    <button type="submit" class="productoBtn activarBtn">Activar</button>
+                                                </form>
+                                            <% } else { %>
+                                                <button type="button" class="productoBtn editarBtn"
+                                                    onclick="window.location.href='/admin/edicion/accesorio/<%= a.id %>'">Editar</button>
+                                                <form action="/admin/productos/baja/accesorio/<%= a.id %>" method="post" class="bajaForm">
+                                                    <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <%- include('../partials/paginacionAdmin', {
+                                prefijo: "Acc",
+                                otroPrefijo: "Ali",
+                                otraPrimera: pagAli.primera,
+                                otraUltima: pagAli.ultima,
+                                buscarAcc: buscarAcc,
+                                buscarAli: buscarAli,
+                                hayAnterior: pagAcc.hayAnterior,
+                                haySiguiente: pagAcc.haySiguiente,
+                                numPagina: pagAcc.numPagina,
+                                antPrimera: pagAcc.antPrimera,
+                                antUltima: pagAcc.antUltima,
+                                sigPrimera: pagAcc.sigPrimera,
+                                sigUltima: pagAcc.sigUltima
+                            }) %>
+                        <% } %>
+                    <% } %>
                 </section>
 
                 <section class="backSection">
                     <h3>Alimentos</h3>
-                    <% if (alimentos && alimentos.length) { %>
-                        <div class="productosGrid">
-                            <% alimentos.forEach(p=> { %>
-                                <div class="productoCard<%= p.estado === false ? ' inactivo' : '' %>">
-                                    <% if (p.estado === false) { %>
-                                        <span class="estadoInactivo">INACTIVO</span>
-                                    <% } %>
-                                    <% if (p.imagen) { %>
-                                        <img src="<%= p.imagen %>" alt="<%= p.nombre %>" class="miniaturaProductoAdmin" />
-                                    <% } else { %>
-                                        <div class="sinImagenProductoAdmin">Sin imagen</div>
-                                    <% } %>
-                                    <div class="productoInfo">
-                                        <strong>
-                                            <%= p.nombre %>
-                                        </strong>
-                                        <p>Precio: <%= p.precio %>
-                                        </p>
-                                        <% if (p.descripcion) { %>
-                                            <p>
-                                                Descripción: <%= p.descripcion %>
-                                            </p>
-                                            <% } %>
-                                    </div>
-                                    <div class="productoActions">
-                                        <% if (p.estado === false) { %>
-                                            <form action="/admin/productos/activar/alimento/<%= p.id %>" method="post"
-                                                class="activarForm">
-                                                <button type="submit" class="productoBtn activarBtn">Activar</button>
-                                            </form>
-                                        <% } else { %>
-                                            <button type="button" class="productoBtn editarBtn"
-                                                onclick="window.location.href='/admin/edicion/alimento/<%= p.id %>'">Editar</button>
-                                            <form action="/admin/productos/baja/alimento/<%= p.id %>" method="post"
-                                                class="bajaForm">
-                                                <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
-                                            </form>
-                                        <% } %>
-                                    </div>
-                                </div>
-                                <% }) %>
-                        </div>
+                    <% if (!pagAli.totalInventario) { %>
+                        <p>No hay alimentos cargados.</p>
+                    <% } else { %>
+                        <%
+                            let urlLimpiarAli = "/admin/backoffice?primeraAcc=" + pagAcc.primera + "&ultimaAcc=" + pagAcc.ultima;
+                            if (buscarAcc) urlLimpiarAli += "&buscarAcc=" + encodeURIComponent(buscarAcc);
+                        %>
+                        <%- include('../partials/busquedaSeccionAdmin', {
+                            actionUrl: "/admin/backoffice",
+                            idInput: "buscarAliInput",
+                            nombreCampo: "buscarAli",
+                            valor: buscarAli,
+                            labelText: "Buscar por nombre",
+                            placeholder: "Nombre del producto...",
+                            otroPrefijo: "Acc",
+                            otraPrimera: pagAcc.primera,
+                            otraUltima: pagAcc.ultima,
+                            otroBuscar: buscarAcc,
+                            urlLimpiar: urlLimpiarAli
+                        }) %>
+                        <% if (!pagAli.total) { %>
+                            <p class="sinCoincidenciasBusqueda">No hay coincidencias en alimentos.</p>
                         <% } else { %>
-                            <p>No hay alimentos cargados.</p>
-                            <% } %>
+                            <div class="productosGrid">
+                                <% alimentos.forEach(p=> { %>
+                                    <div class="productoCard<%= p.estado === false ? ' inactivo' : '' %>">
+                                        <% if (p.estado === false) { %>
+                                            <span class="estadoInactivo">INACTIVO</span>
+                                        <% } %>
+                                        <% if (p.imagen) { %>
+                                            <img src="<%= p.imagen %>" alt="<%= p.nombre %>" class="miniaturaProductoAdmin" />
+                                        <% } else { %>
+                                            <div class="sinImagenProductoAdmin">Sin imagen</div>
+                                        <% } %>
+                                        <div class="productoInfo">
+                                            <strong><%= p.nombre %></strong>
+                                            <p>Precio: <%= p.precio %></p>
+                                            <% if (p.descripcion) { %>
+                                                <p>Descripción: <%= p.descripcion %></p>
+                                            <% } %>
+                                        </div>
+                                        <div class="productoActions">
+                                            <% if (p.estado === false) { %>
+                                                <form action="/admin/productos/activar/alimento/<%= p.id %>" method="post" class="activarForm">
+                                                    <button type="submit" class="productoBtn activarBtn">Activar</button>
+                                                </form>
+                                            <% } else { %>
+                                                <button type="button" class="productoBtn editarBtn"
+                                                    onclick="window.location.href='/admin/edicion/alimento/<%= p.id %>'">Editar</button>
+                                                <form action="/admin/productos/baja/alimento/<%= p.id %>" method="post" class="bajaForm">
+                                                    <button type="submit" class="productoBtn eliminarBtn">Eliminar</button>
+                                                </form>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            </div>
+                            <%- include('../partials/paginacionAdmin', {
+                                prefijo: "Ali",
+                                otroPrefijo: "Acc",
+                                otraPrimera: pagAcc.primera,
+                                otraUltima: pagAcc.ultima,
+                                buscarAcc: buscarAcc,
+                                buscarAli: buscarAli,
+                                hayAnterior: pagAli.hayAnterior,
+                                haySiguiente: pagAli.haySiguiente,
+                                numPagina: pagAli.numPagina,
+                                antPrimera: pagAli.antPrimera,
+                                antUltima: pagAli.antUltima,
+                                sigPrimera: pagAli.sigPrimera,
+                                sigUltima: pagAli.sigUltima
+                            }) %>
+                        <% } %>
+                    <% } %>
                 </section>
             </div>
 

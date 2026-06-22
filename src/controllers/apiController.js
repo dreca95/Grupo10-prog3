@@ -9,8 +9,6 @@ import crypto from "crypto";
 import sequelize from "../config/database.js";
 
 
-const ITEMS_POR_PAGINA = 10;
-
 function parseMoneyToNumber(v) {
   if (typeof v === "number") return v;
   if (!v) return 0;
@@ -30,15 +28,9 @@ function parseMoneyToNumber(v) {
 const getAccesorios = async (req, res) => {
 
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = ITEMS_POR_PAGINA;
-    const offset = (page - 1) * ITEMS_POR_PAGINA;
-
     const rows = await Accesorio.findAll({
       where: { estado: true },
       order: [["nombre", "ASC"]],
-      limit,
-      offset,
       raw: true
     });
 
@@ -51,15 +43,9 @@ const getAccesorios = async (req, res) => {
 
 const getAlimentos = async (req, res) => {
   try {
-    const page = Math.max(1, Number(req.query.page) || 1);
-    const limit = ITEMS_POR_PAGINA;
-    const offset = (page - 1) * ITEMS_POR_PAGINA;
-
     const rows = await Alimento.findAll({
       where: { estado: true },
       order: [["nombre", "ASC"]],
-      limit,
-      offset,
       raw: true
     });
     return res.json(rows);

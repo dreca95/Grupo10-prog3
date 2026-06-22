@@ -17,7 +17,9 @@
                 <h2>Ventas</h2>
             </div>
 
-            <% if (ventas && ventas.length) { %>
+            <% if (!pagVen.totalInventario) { %>
+                <p>No hay ventas registradas.</p>
+            <% } else { %>
                 <div class="ventasTabla">
                     <table>
                         <thead>
@@ -44,8 +46,15 @@
                         </tbody>
                     </table>
                 </div>
-            <% } else { %>
-                <p>No hay ventas registradas.</p>
+                <%- include('../partials/paginacionVentas', {
+                    hayAnterior: pagVen.hayAnterior,
+                    haySiguiente: pagVen.haySiguiente,
+                    numPagina: pagVen.numPagina,
+                    antPrimera: pagVen.antPrimera,
+                    antUltima: pagVen.antUltima,
+                    sigPrimera: pagVen.sigPrimera,
+                    sigUltima: pagVen.sigUltima
+                }) %>
             <% } %>
         </div>
 

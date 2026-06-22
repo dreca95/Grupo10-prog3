@@ -5,21 +5,22 @@ const btnConfirmar = document.getElementById("confirmarModalOk");
 
 let form = null;
 
-document.querySelectorAll(".bajaForm, .activarForm").forEach((formulario) => {
-    formulario.addEventListener("submit", (e) => {
-        e.preventDefault();
-        form = formulario;
+document.addEventListener("submit", (e) => {
+    const formulario = e.target.closest(".bajaForm, .activarForm");
+    if (!formulario) return;
 
-        const activarProducto = formulario.classList.contains("activarForm");
-        confirmarModalTexto.textContent = activarProducto
-            ? "¿Desea activar el producto?"
-            : "¿Desea eliminar el producto?";
+    e.preventDefault();
+    form = formulario;
 
-        btnConfirmar.classList.toggle("modalConfirmarEliminar", !activarProducto);
-        btnConfirmar.classList.toggle("modalConfirmar", activarProducto);
+    const activarProducto = formulario.classList.contains("activarForm");
+    confirmarModalTexto.textContent = activarProducto
+        ? "¿Desea activar el producto?"
+        : "¿Desea eliminar el producto?";
 
-        confirmarModal.classList.add("mostrar");
-    });
+    btnConfirmar.classList.toggle("modalConfirmarEliminar", !activarProducto);
+    btnConfirmar.classList.toggle("modalConfirmar", activarProducto);
+
+    confirmarModal.classList.add("mostrar");
 });
 
 btnCancelar.addEventListener("click", () => {

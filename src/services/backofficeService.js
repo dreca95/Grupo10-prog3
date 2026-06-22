@@ -1,16 +1,39 @@
 import Alimento from "../models/alimentos.js";
 import Accesorio from "../models/accesorios.js";
+import { paginarLista } from "../utils/paginacionAdmin.js";
 
-export async function obtenerDatosBackoffice() {
-    const accesorios = await Accesorio.findAll({
+function filtrarPorNombre(items, termino) {
+    const t = String(termino || "").trim().toLowerCase();
+    if (!t) return items;
+    return items.filter((p) => (p.nombre || "").toLowerCase().includes(t));
+}
+
+export async function obtenerDatosBackoffice(query = {}) {
+    const buscarAcc = String(query.buscarAcc ?? "").trim();
+    const buscarAli = String(query.buscarAli ?? "").trim();
+
+    const todosAcc = await Accesorio.findAll({
         attributes: ["id", "nombre", "precio", "descripcion", "estado", "imagen"],
         order: [["nombre", "ASC"]]
     });
 
-    const alimentos = await Alimento.findAll({
+    const todosAli = await Alimento.findAll({
         attributes: ["id", "nombre", "precio", "descripcion", "estado", "imagen"],
         order: [["nombre", "ASC"]]
     });
 
-    return { accesorios, alimentos };
+    const filtradosAcc = filtrarPorNombre(todosAcc, buscarAcc);
+    const filtradosAli = filtrarPorNombre(todosAli, buscarAli);
+
+    const acc = paginarLista(filtradosAcc, query, "Acc");
+    const ali = paginarLista(filtradosAli, query, "Ali");
+
+    return {
+        accesorios: acc.items,
+        alimentos: ali.items,
+        pagAcc: { ...acc, totalInventario: todosAcc.length },
+        pagAli: { ...ali, totalInventario: todosAli.length },
+        buscarAcc,
+        buscarAli
+    };
 }

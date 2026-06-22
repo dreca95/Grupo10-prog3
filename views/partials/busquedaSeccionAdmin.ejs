@@ -1,0 +1,36 @@
+<%
+  const ocultos = (typeof otroPrefijo !== "undefined" && otroPrefijo)
+    ? (function () {
+        const partes = [];
+        partes.push("primera" + otroPrefijo + "=" + otraPrimera);
+        partes.push("ultima" + otroPrefijo + "=" + otraUltima);
+        if (otroBuscar) {
+          partes.push("buscar" + otroPrefijo + "=" + encodeURIComponent(otroBuscar));
+        }
+        return partes.map(function (p) {
+          const i = p.indexOf("=");
+          return { name: p.slice(0, i), value: decodeURIComponent(p.slice(i + 1)) };
+        });
+      })()
+    : [];
+%>
+<form method="GET" action="<%= actionUrl %>" class="backofficeBusquedaSeccion">
+    <label for="<%= idInput %>"><%= labelText %></label>
+    <div class="backofficeBusquedaFila">
+        <input
+            type="search"
+            id="<%= idInput %>"
+            name="<%= nombreCampo %>"
+            value="<%= valor %>"
+            placeholder="<%= placeholder %>"
+            autocomplete="off"
+        />
+        <button type="submit" class="buscarBtn">Buscar</button>
+        <% if (valor) { %>
+            <a href="<%= urlLimpiar %>" class="limpiarBusquedaBtn">Limpiar</a>
+        <% } %>
+    </div>
+    <% ocultos.forEach(function (campo) { %>
+        <input type="hidden" name="<%= campo.name %>" value="<%= campo.value %>" />
+    <% }) %>
+</form>
