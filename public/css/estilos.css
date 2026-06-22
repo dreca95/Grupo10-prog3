@@ -12,6 +12,46 @@ body {
     color: #333;
 }
 
+.container input[type="file"] {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.previewImagenProducto {
+    display: block;
+    max-width: 180px;
+    max-height: 180px;
+    margin-top: 8px;
+    border-radius: 8px;
+}
+
+.imagenActual {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.miniaturaProductoAdmin {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.sinImagenProductoAdmin {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #f0f0f0;
+    color: #888;
+    font-size: 12px;
+    text-align: center;
+    padding: 4px;
+}
+
 /* Header */
 header {
     background: #2e7d32;

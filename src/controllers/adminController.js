@@ -7,6 +7,7 @@ import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 import { generarJWT, guardarToken, borrarToken } from "../utils/jwt.js";
 import { precioANumero, formatearPrecio } from "../utils/precio.js";
 import { obtenerDatosBackoffice } from "../services/backofficeService.js";
+import { copiarImagenProducto, eliminarImagenLocal, guardarImagenLocal } from "../services/imagenProductoService.js";
 
 const adminController = {
 
@@ -86,17 +87,17 @@ const adminController = {
         const { tipo, nombre, descripcion, precioNum } = req.body;
 
         try {
-            const datos = {
+            const Model = tipo === "accesorio" ? Accesorio : Alimento;
+            const creado = await Model.create({
                 nombre,
                 precio: precioNum,
                 descripcion,
                 estado: true
-            };
+            });
 
-            if (tipo === "accesorio") {
-                await Accesorio.create(datos);
-            } else {
-                await Alimento.create(datos);
+            if (req.file) {
+                const imagen = guardarImagenLocal(tipo, creado.id, req.file);
+                await creado.update({ imagen });
             }
 
             return redirigirBackoffice(res, "exito", `Producto ${nombre} agregado exitosamente`);
@@ -133,7 +134,7 @@ const adminController = {
     edicionPost: async (req, res) => {
         const { tipo: tipoOriginal, id } = req.params;
         const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
-        const producto = { id, nombre, precio: precioNum, descripcion };
+        const producto = { id, nombre, precio: precioNum, descripcion, imagen: null };
 
         try {
             const ModelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
@@ -144,26 +145,51 @@ const adminController = {
                 return redirigirBackoffice(res, "error", "No se pudo editar el producto.");
             }
 
+            producto.imagen = existente.imagen;
+
             if (tipoOriginal !== tipoNuevo) {
                 const ModelNuevo = tipoNuevo === "accesorio" ? Accesorio : Alimento;
-
-                await ModelNuevo.create({
+                const nuevo = await ModelNuevo.create({
                     nombre,
                     precio: precioNum,
                     descripcion,
                     estado: existente.estado
                 });
 
+                let imagen = null;
+
+                if (req.file) {
+                    imagen = guardarImagenLocal(tipoNuevo, nuevo.id, req.file);
+                } else if (existente.imagen) {
+                    imagen = copiarImagenProducto(tipoOriginal, id, tipoNuevo, nuevo.id);
+                }
+
+                if (imagen) {
+                    await nuevo.update({ imagen });
+                }
+
+                producto.imagen = imagen;
+
+                eliminarImagenLocal(tipoOriginal, id);
                 await ModelOriginal.destroy({ where: { id } });
             } else {
+                let imagen = existente.imagen;
+
+                if (req.file) {
+                    imagen = guardarImagenLocal(tipoNuevo, id, req.file);
+                }
+
                 await ModelOriginal.update(
-                    { nombre, precio: precioNum, descripcion },
+                    { nombre, precio: precioNum, descripcion, imagen },
                     { where: { id } }
                 );
+
+                producto.imagen = imagen;
             }
 
             return redirigirBackoffice(res, "exito", `Producto "${nombre}" editado con éxito`);
         } catch (err) {
+            console.error("Error en edición:", err);
             return res.render("admin/edicion", {
                 producto,
                 tipo: tipoNuevo,

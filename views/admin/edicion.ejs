@@ -18,7 +18,7 @@
                 <p class="error"><%= error %></p>
             <% } %>
 
-            <form action="/admin/productos/edicion/<%= tipo %>/<%= producto.id %>" method="post">
+            <form action="/admin/productos/edicion/<%= tipo %>/<%= producto.id %>" method="post" enctype="multipart/form-data">
 
                 <div class="espacios">
                     <label for="tipo">Tipo de producto</label>
@@ -44,6 +44,17 @@
                     <label for="descripcion">Descripción</label>
                     <textarea id="descripcion" name="descripcion" rows="4"
                         required><%= producto.descripcion %></textarea>
+                </div>
+
+                <div>
+                    <label for="imagen">Imagen (JPG, JPEG o PNG - máx. 10 MB)</label>
+                    <% if (producto.imagen) { %>
+                        <p class="imagenActual">
+                            Imagen actual:
+                            <img src="<%= producto.imagen %>" alt="Imagen del producto" class="previewImagenProducto" />
+                        </p>
+                    <% } %>
+                    <input id="imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
                 </div>
 
                 <button type="submit">Guardar cambios</button>

@@ -37,6 +37,11 @@
                                     <% if (a.estado === false) { %>
                                         <span class="estadoInactivo">INACTIVO</span>
                                     <% } %>
+                                    <% if (a.imagen) { %>
+                                        <img src="<%= a.imagen %>" alt="<%= a.nombre %>" class="miniaturaProductoAdmin" />
+                                    <% } else { %>
+                                        <div class="sinImagenProductoAdmin">Sin imagen</div>
+                                    <% } %>
                                     <div class="productoInfo">
                                         <strong>
                                             <%= a.nombre %>
@@ -80,6 +85,11 @@
                                 <div class="productoCard<%= p.estado === false ? ' inactivo' : '' %>">
                                     <% if (p.estado === false) { %>
                                         <span class="estadoInactivo">INACTIVO</span>
+                                    <% } %>
+                                    <% if (p.imagen) { %>
+                                        <img src="<%= p.imagen %>" alt="<%= p.nombre %>" class="miniaturaProductoAdmin" />
+                                    <% } else { %>
+                                        <div class="sinImagenProductoAdmin">Sin imagen</div>
                                     <% } %>
                                     <div class="productoInfo">
                                         <strong>

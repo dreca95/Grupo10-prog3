@@ -13,6 +13,12 @@ export async function obtenerProductoPorId(tipo, id) {
     return Model.findByPk(id);
 }
 
+export async function obtenerProximoIdProducto(tipo) {
+    const Model = modeloPorTipo(tipo);
+    const maxId = await Model.max("id");
+    return (maxId ?? 0) + 1;
+}
+
 export async function productoYaExiste(tipo, nombre, excluirId = null) {
     const Model = modeloPorTipo(tipo);
     const where = {

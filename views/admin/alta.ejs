@@ -18,7 +18,7 @@
                 <p class="error"><%= error %></p>
             <% } %>
 
-            <form action="/admin/productos/alta" method="post">
+            <form action="/admin/productos/alta" method="post" enctype="multipart/form-data">
                 <div class="espacios">
                     <label for="tipo">Tipo de producto</label>
                     <select id="tipo" name="tipo" required>
@@ -42,6 +42,11 @@
                 <div>
                     <label for="descripcion">Descripción</label>
                     <textarea id="descripcion" name="descripcion" rows="4" required></textarea>
+                </div>
+
+                <div>
+                    <label for="imagen">Imagen (JPG, JPEG o PNG - máx. 10 MB)</label>
+                    <input id="imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
                 </div>
 
                 <button type="submit">Aceptar</button>

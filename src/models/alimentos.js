@@ -10,6 +10,7 @@ const Alimento = sequelize.define(
     // En Railway suele venir como DECIMAL / NUMERIC
     precio: { type: DataTypes.DECIMAL },
     descripcion: { type: DataTypes.STRING },
+    imagen: { type: DataTypes.STRING },
     estado: { type: DataTypes.BOOLEAN, defaultValue: true }
   },
   {
