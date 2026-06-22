@@ -6,7 +6,11 @@ async function include(selector, url) {
   if (!res.ok) throw new Error(`No se pudo cargar include: ${url}`);
 
   el.innerHTML = await res.text();
+
+  document.querySelectorAll("[dataThemeToggle]").forEach(function (btn) {
+    const oscuro = (localStorage.getItem("mascoteroTheme") || "light") === "dark";
+    btn.textContent = oscuro ? "Modo claro" : "Modo oscuro";
+  });
 }
 
-// Exponer en global para usarlo fácil en cada página
 window.__include = include;
