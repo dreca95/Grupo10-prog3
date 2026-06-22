@@ -58,9 +58,13 @@
         const row = document.createElement("div");
         row.className = "cartItem";
 
+        const imagenHtml = it.img
+          ? `<img src="${it.img}" alt="${it.nombre}" onerror="this.onerror=null;this.src='/client/img/error.png';">`
+          : `<div class="sinImagenProducto">Sin imagen</div>`;
+
         row.innerHTML = `
             <div class="cartThumb">
-              <img src="${it.img || "/client/img/1.png"}" alt="${it.nombre}" onerror="this.src='/client/img/error.png'">
+              ${imagenHtml}
             </div>
 
             <div class="cartInfo">

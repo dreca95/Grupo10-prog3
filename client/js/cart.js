@@ -23,7 +23,7 @@ function normalizeItem(item) {
     nombre: item.nombre,
     precio: __utils.ConvertirTextoMoneyANumero(item.precio),
     descripcion: item.descripcion ?? "",
-    img: item.img ?? "/client/img/1.png",
+    img: item.img ?? item.imagen ?? null,
     cantidad: Number(item.cantidad) || 0
   };
 }
@@ -39,8 +39,10 @@ function addItem(item) {
   const k = keyOf(it.tipo, it.id);
   const existing = cart.items.find((x) => keyOf(x.tipo, x.id) === k);
 
-  if (existing) existing.cantidad += 1;
-  else cart.items.push({ ...it, cantidad: 1 });
+  if (existing) {
+    existing.cantidad += 1;
+    if (it.img) existing.img = it.img;
+  } else cart.items.push({ ...it, cantidad: 1 });
 
   saveCart(cart);
   return cart;

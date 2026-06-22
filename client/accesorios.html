@@ -48,9 +48,7 @@
         const res = await fetch(`/api/accesorios?page=${page}`);
         if (!res.ok)
           throw new Error("No se pudo cargar /api/accesorios");
-        console.log('Respuesta:', res);
         const productos = await res.json();
-        console.log(productos);
 
         if (!productos || productos.length === 0) {
           grid.innerHTML = "<p>No hay productos.</p>";
@@ -65,13 +63,16 @@
           const precioNumero = __utils.ConvertirTextoMoneyANumero(prod.precio);
           const precioTexto = __utils.FormatearNumeroAPrecio(prod.precio);
           const descripcion = prod.descripcion || "";
+          const imagenHtml = prod.imagen
+            ? `<img src="${prod.imagen}" alt="${nombre}" onerror="this.onerror=null;this.src='/client/img/error.png';">`
+            : `<div class="sinImagenProducto">Sin imagen</div>`;
 
 
           const card = document.createElement("div");
           card.className = "productoCard";
           card.innerHTML = `
               <div class="productoImagen">
-                <img src="/client/img/1.png" alt="${nombre}" onerror="this.src='/client/img/error.png'">
+                ${imagenHtml}
               </div>
               <div class="productoInfo">
                 <h3>${nombre}</h3>
@@ -96,7 +97,7 @@
               nombre,
               precio: precioNumero,
               descripcion,
-              img: "/client/img/1.png"
+              img: prod.imagen || null
             });
           });
 
