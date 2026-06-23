@@ -1,4 +1,4 @@
-const CANT_POR_PAGINA = 8;
+const CANT_POR_PAGINA = 12;
 
 function crearPaginadorCatalogo({
     apiUrl,

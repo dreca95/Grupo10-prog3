@@ -1,6 +1,6 @@
 import ejs from "ejs"; // Motor de plantillas EJS para renderizar vistas dinámicas
 import express from "express"; // Framework Express para crear el servidor web
-import homeRouter from "./src/routes/homeRoutes.js"; // Rutas definidas para la sección principal (home)
+//import homeRouter from "./src/routes/homeRoutes.js"; // Rutas definidas para la sección principal (home)
 import adminRouter from "./src/routes/adminRoutes.js"; // Rutas definidas para la administración
 import sequelize from './src/config/database.js'; // Carga las variables de entorno desde el archivo .env
 import dotenv from "dotenv";
@@ -25,39 +25,13 @@ app.use(express.static("public")); // Habilita el uso de archivos estáticos (cs
 // Frontend estático (proyecto separado)
 app.use("/client", express.static("client"));
 
-app.use(homeRouter); // (sin rutas cliente EJS)
+//app.use(homeRouter); // (sin rutas cliente EJS)
 app.use(adminRouter); // Registra y activa las rutas importadas desde adminRoutes.js
 
 // Home final: frontend estático
 app.get("/", (req, res) => {
     res.sendFile("index.html", { root: "./client" });
 });
-
-
-// CONEXIÓN A RAILWAY-BD
-(async () => {
-    try {
-
-        //console.log("Conectado a PostgreSQL");
-
-        // INSERT de prueba
-        // const nuevo = await Accesorio.create({
-        //     nombre: "correa",
-        //     precio: 7000
-        // });
-        //console.log("Insert realizado:", nuevo.toJSON());
-
-        // SELECT de prueba
-        // const total = await Accesorio.count();
-        // console.log("Total de ACCESORIOS: ", total);
-        //const todos = await Accesorio.findAll();
-        //console.log("Registros:", todos.map(a => a.toJSON()));
-
-    } catch (error) {
-        console.error("Error:", error);
-    }
-})();
-
 
 app.use((err, req, res, next) => {
     if (!req.originalUrl.startsWith("/api")) {
