@@ -27,6 +27,7 @@ function formatearNumeroAPrecio(valor) {
     );
 }
 
+// fecha/hora en formato dd/mm/yyyy hh:mm:ss zona AR
 function formatearFechaHoraAR(value) {
     const d = new Date(value);
     const parts = new Intl.DateTimeFormat("es-AR", {
@@ -40,24 +41,29 @@ function formatearFechaHoraAR(value) {
         hour12: false
     }).formatToParts(d);
 
+    // saca un pedazo del formatToParts por tipo (day, month, etc)
     const get = (t) => parts.find((p) => p.type === t)?.value || "00";
     return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
 }
 
+// lee un query param de la url para paginado
 function obtenerQueryParam(name, url = window.location.href) {
     const u = new URL(url);
     return u.searchParams.get(name);
 }
 
+// nombre del cliente guardado en localStorage
 function obtenerNombreCliente() {
     return String(localStorage.getItem("cliente_nombre") || "").trim();
 }
 
+// true si hay nombre y no es un string gigante
 function tieneNombreCliente() {
     const nombre = obtenerNombreCliente();
     return nombre.length > 0 && nombre.length <= 100;
 }
 
+// redirige al home si no pusieron nombre de cliente
 function requerirNombreCliente() {
     if (!tieneNombreCliente()) {
         window.location.replace("/");

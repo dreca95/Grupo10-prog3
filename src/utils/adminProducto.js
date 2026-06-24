@@ -1,9 +1,11 @@
 const TIPOS_PRODUCTO = ["accesorio", "alimento"];
 
+//chequea si el tipo es accesorio o alimento
 export function esValido(tipo) {
     return TIPOS_PRODUCTO.includes(tipo);
 }
 
+// parsea precio del form, null si ta vacio o <= 0
 export function parsePrecio(precio) {
     const precioNum = Number(precio);
     if (precio === "" || Number.isNaN(precioNum) || precioNum <= 0) {
@@ -12,6 +14,7 @@ export function parsePrecio(precio) {
     return precioNum;
 }
 
+//render alta o edicion con el error y datos q mandaron
 export function renderErrorProducto(req, res, error) {
     const { tipo, nombre, precio, descripcion } = req.body;
     const id = req.params.id;

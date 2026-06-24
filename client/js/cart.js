@@ -3,6 +3,7 @@
 const CART_KEY = "mascotero_cart";
 const MAX_CANTIDAD_ITEM = 100;
 
+//lee el carrito del localStorage o array vacio si falla
 function loadCart() {
   try {
     return JSON.parse(localStorage.getItem(CART_KEY)) || { items: [] };
@@ -11,12 +12,14 @@ function loadCart() {
   }
 }
 
+//guarda carrito y avisa q cambio con evento
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
   window.dispatchEvent(new Event("cart:updated"));
 }
 
 
+// normaliza un item q tenga siempre la misma forma
 function normalizeItem(item) {
   return {
     tipo: item.tipo,
@@ -29,10 +32,12 @@ function normalizeItem(item) {
   };
 }
 
+// clave unica tipo:id p buscar en el array
 function keyOf(tipo, id) {
   return `${tipo}:${id}`;
 }
 
+//suma 1 al item o lo agrega si no existia (tope 100)
 function addItem(item) {
   const cart = loadCart();
   const it = normalizeItem(item);
@@ -52,6 +57,7 @@ function addItem(item) {
   return true;
 }
 
+//resta 1 y saca del array si queda en 0
 function removeItem(tipo, id) {
   const cart = loadCart();
   const k = keyOf(tipo, id);
@@ -66,6 +72,7 @@ function removeItem(tipo, id) {
   return cart;
 }
 
+// setea cantidad exacta respetando min 0 y max 100
 function setQuantity(tipo, id, cantidad) {
   const cart = loadCart();
   const k = keyOf(tipo, id);
@@ -81,6 +88,7 @@ function setQuantity(tipo, id, cantidad) {
   return cart;
 }
 
+// chequea q todas las cantidades sean enteros validos 1..100
 function cantidadesValidas() {
   const cart = loadCart();
   return cart.items.every((it) => {
@@ -89,15 +97,18 @@ function cantidadesValidas() {
   });
 }
 
+//                  vacia el carrito
 function clearCart() {
   saveCart({ items: [] });
 }
 
+//           total de unidades sumando todas las lineas
 function getTotalCount() {
   const cart = loadCart();
   return cart.items.reduce((acc, it) => acc + (Number(it.cantidad) || 0), 0);
 }
 
+//        precio total del carrito (cantidad x precio unitario)
 function getTotalPrice() {
   const cart = loadCart();
   return cart.items.reduce(
@@ -109,6 +120,7 @@ function getTotalPrice() {
   );
 }
 
+//   cuantas unidades hay de un producto especifico
 function getItemQuantity(tipo, id) {
   const cart = loadCart();
   const k = keyOf(tipo, id);
@@ -117,6 +129,7 @@ function getItemQuantity(tipo, id) {
 }
 
 // Badge en header (#cartCount)
+//      actualiza el numerito del carrito en el header
 function updateCartBadge() {
   const el = document.getElementById("cartCount");
   if (!el) return;

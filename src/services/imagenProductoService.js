@@ -4,14 +4,17 @@ import path from "path";
 const carpeta = "public/img/productos";
 const extensiones = [".jpg", ".jpeg", ".png"];
 
+// nombre base del archivo tipo-{id}
 function nombreImagen(tipo, id) {
     return `${tipo}-${id}`;
 }
 
+// ruta publica /img/productos/... con la ext
 function imagenRuta(tipo, id, ext) {
     return `/img/productos/${nombreImagen(tipo, id)}${ext}`;
 }
 
+// guarda el buffer en disco y borra otras extensiones viejas
 export function guardarImagenLocal(tipo, id, file) {
     const ext = path.extname(file.originalname).toLowerCase();
     const base = nombreImagen(tipo, id);
@@ -32,6 +35,7 @@ export function guardarImagenLocal(tipo, id, file) {
     return imagenRuta(tipo, id, ext);
 }
 
+// borra todas las ext posibles de la imagen del producto
 export function eliminarImagenLocal(tipo, id) {
     const base = nombreImagen(tipo, id);
 
@@ -44,6 +48,7 @@ export function eliminarImagenLocal(tipo, id) {
     }
 }
 
+// copia imagen de un producto a otro (ej cambio de tipo)
 export function copiarImagenProducto(tipoOrigen, idOrigen, tipoDestino, idDestino) {
     const baseOrigen = nombreImagen(tipoOrigen, idOrigen);
     const baseDestino = nombreImagen(tipoDestino, idDestino);

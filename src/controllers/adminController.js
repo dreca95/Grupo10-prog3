@@ -6,29 +6,31 @@ import { activarProducto,crearProducto,darBajaProducto,editarProducto,obtenerPro
 
 const adminController = {
 
+    // ender del login del backoffice
     loginGet: (req, res) => {
         return res.render("admin/login");
     },
 
+    //chequea mail y pass, si sta ok genera jwt y manda al backoffice
     loginPost: async (req, res) => {
-        const { usuario, password } = req.body;
+        const { email, password } = req.body;
 
         try {
-            const admin = await Administrador.findOne({ where: { usuario } });
+            const admin = await Administrador.findOne({ where: { email } });
 
             if (!admin) {
-                return res.render("admin/login", { error: "Usuario y/o Password incorrecto(s)." });
+                return res.render("admin/login", { error: "Email y/o Password incorrecto(s)." });
             }
 
             const coincide = await bcrypt.compare(password, admin.password);
 
             if (!coincide) {
-                return res.render("admin/login", { error: "Usuario y/o Password incorrecto(s)." });
+                return res.render("admin/login", { error: "Email y/o Password incorrecto(s)." });
             }
 
             const token = await generarJWT({
                 id: admin.id,
-                usuario: admin.usuario
+                email: admin.email
             });
             guardarToken(res, token);
             return res.redirect("/admin/backoffice");
@@ -39,27 +41,32 @@ const adminController = {
     },
 
 
+    //  borra la cookie del token y vuelve al login
     logoutPost: (req, res) => {
         borrarToken(res);
         return res.redirect("/admin/login");
     },
 
 
+    //  pantalla de alta de producto nuevo
     altaGet: (req, res) => {
         return res.render("admin/alta");
     },
 
 
+    //  home del backoffice con la cookie q leyo del req
     backofficeGet: (req, res) => {
         const cookie = leerCookie(req, res);
         return res.render("admin/indexBackoffice", { cookie });
     },
 
+    //      vista de ventas del admin
     ventasGet: (req, res) => {
         return res.render("admin/ventas");
     },
 
 
+    //     guarda producto nuevo en db y redirige con mensaje de exito
     altaPost: async (req, res) => {
         const { tipo, nombre, descripcion, precioNum } = req.body;
 
@@ -80,6 +87,7 @@ const adminController = {
     },
 
 
+    //trae el producto x tipo y id y muestra form de edicion
     edicionGet: async (req, res) => {
         const { tipo, id } = req.params;
 
@@ -98,6 +106,7 @@ const adminController = {
     },
 
 
+    //actualiza producto existente, tmb puede cambiar la imagen
     edicionPost: async (req, res) => {
         const { tipo: tipoOriginal, id } = req.params;
         const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
@@ -130,6 +139,7 @@ const adminController = {
     },
 
 
+    // da de baja logica al producto
     bajaPost: async (req, res) => {
         const { tipo, id } = req.params;
         const { producto } = req;
@@ -142,6 +152,7 @@ const adminController = {
         }
     },
 
+    //reactiva un producto q estaba dado de baja
     activarPost: async (req, res) => {
         const { tipo, id } = req.params;
         const { producto } = req;

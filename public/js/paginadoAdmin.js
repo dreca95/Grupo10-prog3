@@ -1,6 +1,7 @@
 const CANT_POR_PAGINA = 10;
 const LIMITE_MAXIMO_API = 50;
 
+//escapa html para q no rompa el dom
 function escaparHtml(texto) {
     return String(texto ?? "")
         .replace(/&/g, "&amp;")
@@ -9,6 +10,7 @@ function escaparHtml(texto) {
         .replace(/"/g, "&quot;");
 }
 
+//fetch al back admin y si no estas logueado te manda al login
 async function consultarApiAdmin(url) {
     const response = await fetch(url);
 
@@ -24,6 +26,7 @@ async function consultarApiAdmin(url) {
     return response.json();
 }
 
+//  arma todo el paginador de productos del admin (grid, busqueda, etc)
 function crearPaginadorProductosAdmin({
     apiUrl,
     tipo,
@@ -56,10 +59,12 @@ function crearPaginadorProductosAdmin({
     let totalInventario = 0;
     let loading = false;
 
+    //vuelve a pagina 1 cuando buscas o limpias
     function reiniciarPagina() {
         page = 1;
     }
 
+    //habilita/deshabilita prev next y muestra num de pagina
     function actualizarBotones() {
         const numPagina = totalPages > 0 ? page : 0;
         pageText.textContent = "Página " + numPagina;
@@ -67,6 +72,7 @@ function crearPaginadorProductosAdmin({
         siguiente.classList.toggle("disabled", totalPages === 0 || page >= totalPages);
     }
 
+    //       crea la card html de un producto con botones editar/baja o activar
     function renderizarCard(prod) {
         const id = prod.id;
         const nombre = escaparHtml(prod.nombre);
@@ -102,6 +108,7 @@ function crearPaginadorProductosAdmin({
         return card;
     }
 
+    //   pega a la api y agrega el grid con los productos de la pagina. encodeuri codifica valorues de manera valida
     async function cargarProductos() {
         if (loading) return;
         loading = true;
@@ -158,6 +165,7 @@ function crearPaginadorProductosAdmin({
         }
     }
 
+    //avanza una pagina si hay 
     function paginaSiguiente() {
         if (totalPages > 0 && page < totalPages) {
             page += 1;
@@ -165,6 +173,7 @@ function crearPaginadorProductosAdmin({
         }
     }
 
+    //retrocede una pagina
     function paginaAnterior() {
         if (page > 1) {
             page -= 1;
@@ -172,12 +181,14 @@ function crearPaginadorProductosAdmin({
         }
     }
 
+    //toma el texto del input y recarga desde pag 1
     function aplicarBusqueda() {
         terminoBusqueda = inputBuscar.value;
         reiniciarPagina();
         cargarProductos();
     }
 
+    //borra filtro y vuelve a mostrar todo
     function limpiarBusqueda() {
         terminoBusqueda = "";
         inputBuscar.value = "";
@@ -185,11 +196,13 @@ function crearPaginadorProductosAdmin({
         cargarProductos();
     }
 
+    // click en anterior
     anterior.addEventListener("click", (e) => {
         e.preventDefault();
         paginaAnterior();
     });
 
+    // click en siguiente
     siguiente.addEventListener("click", (e) => {
         e.preventDefault();
         paginaSiguiente();
@@ -197,6 +210,7 @@ function crearPaginadorProductosAdmin({
 
     btnBuscar.addEventListener("click", aplicarBusqueda);
 
+    // enter en el buscador = buscar
     inputBuscar.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -209,6 +223,7 @@ function crearPaginadorProductosAdmin({
     return { cargarProductos };
 }
 
+// lo mismo q productos pero para la tabla de ventas con fecha tmb
 function crearPaginadorVentasAdmin({
     apiUrl,
     tbodyId,
@@ -245,10 +260,12 @@ function crearPaginadorVentasAdmin({
     let totalInventario = 0;
     let loading = false;
 
+    //resetea a pagina 1
     function reiniciarPagina() {
         page = 1;
     }
 
+    // actualiza estado de botones de paginacion
     function actualizarBotones() {
         const numPagina = totalPages > 0 ? page : 0;
         pageText.textContent = "Página " + numPagina;
@@ -256,10 +273,12 @@ function crearPaginadorVentasAdmin({
         siguiente.classList.toggle("disabled", totalPages === 0 || page >= totalPages);
     }
 
+    //  chequea si hay texto o fecha en los filtros
     function hayBusquedaActiva() {
         return Boolean((terminoBusqueda || "").trim() || (terminoFecha || "").trim());
     }
 
+    // hace las filas de  ventas con productos  a filas de tabla
     function filasDesdeItems(items) {
         if (!items.length) return [];
 
@@ -305,6 +324,7 @@ function crearPaginadorVentasAdmin({
         return filas;
     }
 
+    //trae ventas paginadas y las agrega en el tbody
     async function cargarVentas() {
         if (loading) return;
         loading = true;
@@ -389,6 +409,7 @@ function crearPaginadorVentasAdmin({
         }
     }
 
+    // pagina siguiente de ventas
     function paginaSiguiente() {
         if (totalPages > 0 && page < totalPages) {
             page += 1;
@@ -396,6 +417,7 @@ function crearPaginadorVentasAdmin({
         }
     }
 
+    // pagina anterior de ventas
     function paginaAnterior() {
         if (page > 1) {
             page -= 1;
@@ -403,6 +425,7 @@ function crearPaginadorVentasAdmin({
         }
     }
 
+    //    aplica filtros de texto y fecha
     function aplicarBusqueda() {
         terminoBusqueda = inputBuscar.value;
         terminoFecha = inputFecha.value;
@@ -410,6 +433,7 @@ function crearPaginadorVentasAdmin({
         cargarVentas();
     }
 
+    //    limpia busqueda y fecha y recarga
     function limpiarBusqueda() {
         terminoBusqueda = "";
         terminoFecha = "";
@@ -419,11 +443,13 @@ function crearPaginadorVentasAdmin({
         cargarVentas();
     }
 
+    //       handler click anterior ventas
     anterior.addEventListener("click", (e) => {
         e.preventDefault();
         paginaAnterior();
     });
 
+    // handler click siguiente ventas
     siguiente.addEventListener("click", (e) => {
         e.preventDefault();
         paginaSiguiente();

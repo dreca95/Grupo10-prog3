@@ -84,6 +84,7 @@ const includeVentaProductos = [
     }
 ];
 
+// saca el nombre del accesorio o alimento del detalle
 function nombreProducto(vp) {
     if (vp.accesorio) {
         return vp.accesorio.nombre ?? "-";
@@ -94,6 +95,7 @@ function nombreProducto(vp) {
     return "-";
 }
 
+// fecha a string es-AR timezone BA
 function formatearFecha(fecha) {
     if (!fecha) return "-";
     return new Date(fecha).toLocaleString("es-AR", {
@@ -101,6 +103,7 @@ function formatearFecha(fecha) {
     });
 }
 
+// mapea una linea de detalle con precios formateados
 function mapearProductoDetalle(vp) {
     return {
         id: vp.id,
@@ -115,6 +118,7 @@ function mapearProductoDetalle(vp) {
     };
 }
 
+// venta completa con productos del detalle ya mapeados
 function mapearVentaConProductos(row) {
     const venta = row.get({ plain: true });
 
@@ -131,6 +135,7 @@ function mapearVentaConProductos(row) {
     };
 }
 
+//fila de venta_productos con datos de venta y precios
 function mapearVentaProducto(row) {
     const vp = row.get({ plain: true });
 
@@ -150,30 +155,7 @@ function mapearVentaProducto(row) {
     };
 }
 
-function armarWhereVentas(q, fecha) {
-    const where = {};
-    const termino = normalizarBusqueda(q);
-    const filtroFecha = armarFiltroFechaVenta(fecha);
-
-    if (termino) {
-        where[Op.or] = [
-            sequelize.where(
-                sequelize.cast(sequelize.col("Venta.id"), "varchar"),
-                { [Op.iLike]: `%${termino}%` }
-            ),
-            { cliente: { [Op.iLike]: `%${termino}%` } },
-            { "$detalle.accesorio.nombre$": { [Op.iLike]: `%${termino}%` } },
-            { "$detalle.alimento.nombre$": { [Op.iLike]: `%${termino}%` } }
-        ];
-    }
-
-    if (filtroFecha) {
-        Object.assign(where, filtroFecha);
-    }
-
-    return where;
-}
-
+//filtro de busqueda x id linea o nombre producto
 function armarFiltroVentas(q) {
     const termino = normalizarBusqueda(q);
     if (!termino) return {};
@@ -190,6 +172,7 @@ function armarFiltroVentas(q) {
     };
 }
 
+// rango del dia si hay fecha
 function armarFiltroFechaVenta(fechaBusqueda) {
     const fecha = normalizarBusqueda(fechaBusqueda);
     if (!fecha) return undefined;
@@ -202,6 +185,7 @@ function armarFiltroFechaVenta(fechaBusqueda) {
     };
 }
 
+// clona includes y mete filtro fecha en venta si aplica
 function armarIncludeVenta(fechaBusqueda) {
     const filtroFecha = armarFiltroFechaVenta(fechaBusqueda);
 
@@ -217,27 +201,7 @@ function armarIncludeVenta(fechaBusqueda) {
     });
 }
 
-export async function listarVentasBackoffice({ page, limit, offset, q, fecha }) {
-    const [result, totalInventario] = await Promise.all([
-        Venta.findAndCountAll({
-            include: [includeDetalle],
-            where: armarWhereVentas(q, fecha),
-            order: [["id", "DESC"]],
-            limit,
-            offset,
-            distinct: true,
-            col: "id"
-        }),
-        Venta.count()
-    ]);
-
-    return {
-        items: result.rows.map(mapearVentaConProductos),
-        total: result.count,
-        totalInventario
-    };
-}
-
+// listado de lineas venta_productos con include venta
 export async function listarVentaProductosBackoffice({ page, limit, offset, q, fecha }) {
     const [result, totalInventario] = await Promise.all([
         VentaProductos.findAndCountAll({
@@ -259,6 +223,7 @@ export async function listarVentaProductosBackoffice({ page, limit, offset, q, f
     };
 }
 
+// agrega items al detalle de la venta en la transaction
 export async function agregarDetalleVenta(venta, items, transaction) {
     for (const item of items) {
         const through = {
@@ -275,6 +240,7 @@ export async function agregarDetalleVenta(venta, items, transaction) {
     }
 }
 
+//trae una venta x id con todo el detalle mapeado
 export async function obtenerVentaConDetalle(ventaId) {
     const venta = await Venta.findByPk(ventaId, {
         include: [includeDetalle]

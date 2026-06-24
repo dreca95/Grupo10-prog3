@@ -4,6 +4,7 @@ import { baseDeDatosDisponible } from "../services/authService.js";
 import { obtenerProductoPorId, productoYaExiste, modeloPorTipo } from "../services/productoService.js";
 import { esValido, parsePrecio, renderErrorProducto } from "../utils/adminProducto.js";
 
+// chequea si hay token valido y la db responde, sino limpia cookie
 async function sesionAdminValida(req, res) {
     const token = obtenerToken(req);
 
@@ -25,10 +26,12 @@ async function sesionAdminValida(req, res) {
     return payload;
 }
 
+// helper chico para responder errores json en rutas api admin
 function responderErrorApi(res, status, error) {
     return res.status(status).json({ error });
 }
 
+//        valida q tipo e id de la url sean correctos (api)
 export function validarTipoIdParamsApi(req, res, next) {
     const { tipo, id } = req.params;
     const idNum = Number(id);
@@ -40,6 +43,7 @@ export function validarTipoIdParamsApi(req, res, next) {
     next();
 }
 
+// valida campos del body al crear/editar producto respuesta json
 export function validarProductoApi(req, res, next) {
     const { tipo, nombre, precio, descripcion } = req.body;
     const nombreTrim = String(nombre ?? "").trim();
@@ -68,6 +72,7 @@ export function validarProductoApi(req, res, next) {
     next();
 }
 
+// impide si ya existe otro producto con el mismo nombre api
 export async function validarProductoDuplicadoApi(req, res, next) {
     try {
         const { tipo, nombre } = req.body;
@@ -86,6 +91,7 @@ export async function validarProductoDuplicadoApi(req, res, next) {
     }
 }
 
+//busca el producto y confirma q este activo antes de dar de baja api
 export async function validarProductoParaBajaApi(req, res, next) {
     try {
         const { tipo, id } = req.params;
@@ -104,6 +110,7 @@ export async function validarProductoParaBajaApi(req, res, next) {
     }
 }
 
+// busca producto inactivo y pasa si se puede reactivar -api
 export async function validarProductoParaActivarApi(req, res, next) {
     try {
         const { tipo, id } = req.params;
@@ -122,6 +129,7 @@ export async function validarProductoParaActivarApi(req, res, next) {
     }
 }
 
+// middleware de rutas html: si no hay sesion manda al login
 export async function verificarAdmin(req, res, next) {
     const payload = await sesionAdminValida(req, res);
 
@@ -133,6 +141,7 @@ export async function verificarAdmin(req, res, next) {
     next();
 }
 
+// lo mismo pero para endpoints json, responde 401
 export async function verificarAdminApi(req, res, next) {
     const payload = await sesionAdminValida(req, res);
 
@@ -144,6 +153,7 @@ export async function verificarAdminApi(req, res, next) {
     next();
 }
 
+//si ya esta logueado no deja ver el login otra vez
 export async function redirigirSiAdminLogueado(req, res, next) {
     const payload = await sesionAdminValida(req, res);
 
@@ -154,21 +164,29 @@ export async function redirigirSiAdminLogueado(req, res, next) {
     next();
 }
 
+//valida email y password del form de login antes del controller
 export function validarLogin(req, res, next) {
-    const usuario = String(req.body.usuario ?? "").trim();
+    const email = String(req.body.email ?? "").trim().toLowerCase();
     const password = String(req.body.password ?? "").trim();
 
-    if (!usuario || !password) {
+    if (!email || !password) {
         return res.render("admin/login", {
-            error: "Usuario y contraseña deben ser ingresados"
+            error: "Email y contraseña deben ser ingresados"
         });
     }
 
-    req.body.usuario = usuario;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.render("admin/login", {
+            error: "El email ingresado no es válido"
+        });
+    }
+
+    req.body.email = email;
     req.body.password = password;
     next();
 }
 
+//valida campos del producto en formularios html del backoffice
 export function validarProducto(req, res, next) {
     const { tipo, nombre, precio, descripcion } = req.body;
     const nombreTrim = String(nombre ?? "").trim();
@@ -197,6 +215,7 @@ export function validarProducto(req, res, next) {
     next();
 }
 
+// evita nombres duplicados al alta/edicion desde el backoffice html
 export async function validarProductoDuplicado(req, res, next) {
     try {
         const { tipo, nombre } = req.body;
@@ -215,6 +234,7 @@ export async function validarProductoDuplicado(req, res, next) {
     }
 }
 
+// valida tipo e id en params de rutas html (redirige si estan mal)
 export function validarTipoIdParams(req, res, next) {
     const { tipo, id } = req.params;
     const idNum = Number(id);
@@ -226,6 +246,7 @@ export function validarTipoIdParams(req, res, next) {
     next();
 }
 
+// carga producto activo en req antes de dar de baja (html)
 export async function validarProductoParaBaja(req, res, next) {
     try {
         const { tipo, id } = req.params;
@@ -244,6 +265,7 @@ export async function validarProductoParaBaja(req, res, next) {
     }
 }
 
+// carga producto inactivo en req antes de activarlo (html
 export async function validarProductoParaActivar(req, res, next) {
     try {
         const { tipo, id } = req.params;

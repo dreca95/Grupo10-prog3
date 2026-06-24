@@ -14,10 +14,11 @@ if (!jwtSecreto) {
 // Cambia en cada reinicio del servidor: invalida tokens emitidos antes.
 const SERVER_SESSION_ID = crypto.randomBytes(16).toString("hex");
 
-// Clave secreta para firmar (debe ser Uint8Array)
+// Clave secreta para firmar 
 const secret = new TextEncoder().encode(jwtSecreto);
 
 
+// arma el jwt con el payload y sid del server, dura 5 min
 export async function generarJWT(payload) {
     const token = jwt.sign({ ...payload, sid: SERVER_SESSION_ID }, secret, {
         expiresIn: "5m",
@@ -27,6 +28,7 @@ export async function generarJWT(payload) {
 }
 
 
+// chequea q el token sea valido y de esta sesion del server
 export async function verificarJWT(token) {
     try {
         const payload = jwt.verify(token, secret);
@@ -42,19 +44,21 @@ export async function verificarJWT(token) {
 }
 
 
+//guarda el token del admin en cookie httpOnly
 export function guardarToken(res, token) {
     res.cookie("adminToken", token, {
         httpOnly: true,
-        secure: true,
         maxAge: 5 * 60 * 1000
     });
 }
 
 
+//limpia la cookie del admin al logout
 export function borrarToken(res) {
-    res.clearCookie("adminToken", { httpOnly: true, secure: true });
+    res.clearCookie("adminToken", { httpOnly: true});
 }
 
+//saca el adminToken de las cookies del request
 export function obtenerToken(req) {
     return req.cookies.adminToken ?? null;
 }

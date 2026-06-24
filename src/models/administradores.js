@@ -3,7 +3,7 @@ import sequelize from '../config/database.js';
 
 const Administrador = sequelize.define('ADMINISTRADORES', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-  usuario: { type: DataTypes.STRING, allowNull: false },
+  email: { type: DataTypes.STRING, allowNull: false, field: "usuario" },
   password: { type: DataTypes.STRING, allowNull: false }
 }, {
   freezeTableName: true,

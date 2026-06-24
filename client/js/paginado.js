@@ -2,6 +2,7 @@ const CANT_POR_PAGINA = 12; // default (consumo API)
 
 const MAX_LIMIT_API = 50;
 
+// monta paginador del catalogo cliente con carrito integrado
 function crearPaginadorCatalogo({
     apiUrl,
     tipo,
@@ -31,10 +32,12 @@ function crearPaginadorCatalogo({
     let totalPages = 0;
     let loading = false;
 
+    // vuelve a pag 1 al buscar
     function reiniciarPagina() {
         page = 1;
     }
 
+    //        actualiza prev/next y texto de pagina
     function actualizarBotones() {
         const numPagina = totalPages > 0 ? page : 0;
         pageText.textContent = "Página " + numPagina;
@@ -43,10 +46,12 @@ function crearPaginadorCatalogo({
         siguiente.classList.toggle("disabled", totalPages === 0 || page >= totalPages);
     }
 
+    //muestra o oculta el numerito de cantidad en la card
     function setCantidadVisible(cantidadEl, cantidad) {
         cantidadEl.textContent = cantidad > 0 ? String(cantidad) : "";
     }
 
+    //refresca cantidades en todas las cards segun el carrito
     function actualizarCantidadEnCards() {
         grid.querySelectorAll(".productoCard[data-producto-id]").forEach((card) => {
             const id = Number(card.dataset.productoId);
@@ -57,6 +62,7 @@ function crearPaginadorCatalogo({
         });
     }
 
+    //pone un mensaje solo en el grid (cargando, error, vacio)
     function mostrarMensajeGrid(texto, className) {
         grid.replaceChildren();
         const p = document.createElement("p");
@@ -65,6 +71,7 @@ function crearPaginadorCatalogo({
         grid.appendChild(p);
     }
 
+    // arma la card de producto con botones + y - del carrito
     function renderizarCard(prod) {
         const id = Number(prod.id ?? prod.ID ?? prod.Id);
         const nombre = prod.nombre;
@@ -83,6 +90,7 @@ function crearPaginadorCatalogo({
             const img = document.createElement("img");
             img.src = prod.imagen;
             img.alt = nombre;
+            // si la img falla pone placeholder de error
             img.onerror = function () {
                 this.onerror = null;
                 this.src = "/client/img/error.png";
@@ -142,6 +150,7 @@ function crearPaginadorCatalogo({
         info.appendChild(actions);
         card.appendChild(info);
 
+        // suma 1 al carrito y refresca el num
         btnAdd.addEventListener("click", () => {
             if (!id) return;
             __cart.addItem({
@@ -155,6 +164,7 @@ function crearPaginadorCatalogo({
             actualizarCantidadEnCards();
         });
 
+        //  resta 1 del carrito
         btnRemove.addEventListener("click", () => {
             if (!id) return;
             __cart.removeItem(tipo, id);
@@ -164,6 +174,7 @@ function crearPaginadorCatalogo({
         return card;
     }
 
+    //   fetch productos paginados y los mete al grid
     async function cargarProductos() {
         if (loading) return;
         loading = true;
@@ -217,6 +228,7 @@ function crearPaginadorCatalogo({
         }
     }
 
+    //  siguiente pagina del catalogo
     function paginaSiguiente() {
         if (totalPages > 0 && page < totalPages) {
             page += 1;
@@ -224,6 +236,7 @@ function crearPaginadorCatalogo({
         }
     }
 
+    //pagina ant
     function paginaAnterior() {
         if (page > 1) {
             page -= 1;
@@ -231,12 +244,14 @@ function crearPaginadorCatalogo({
         }
     }
 
+    //busca por texto y recarga desde pag 1
     function aplicarBusqueda() {
         terminoBusqueda = inputBuscar.value;
         reiniciarPagina();
         cargarProductos();
     }
 
+    // limpia filtro
     function limpiarBusqueda() {
         terminoBusqueda = "";
         inputBuscar.value = "";
@@ -244,11 +259,13 @@ function crearPaginadorCatalogo({
         cargarProductos();
     }
 
+    //click boton anterior
     anterior.addEventListener("click", (e) => {
         e.preventDefault();
         paginaAnterior();
     });
 
+    // click boton siguiente
     siguiente.addEventListener("click", (e) => {
         e.preventDefault();
         paginaSiguiente();
@@ -256,6 +273,7 @@ function crearPaginadorCatalogo({
 
     btnBuscar.addEventListener("click", aplicarBusqueda);
 
+    //enter aplicar busqueda
     inputBuscar.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();

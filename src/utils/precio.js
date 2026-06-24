@@ -1,3 +1,4 @@
+// convierte string/$comas a numero, si falla va 0
 export function precioANumero(precio) {
     if (typeof precio === "number" && Number.isFinite(precio)) return precio;
     if (precio == null) return 0;
@@ -13,6 +14,7 @@ export function precioANumero(precio) {
     return Number.isNaN(num) ? 0 : num;
 }
 
+// muestra el precio lindo tipo $ 1.234,56 es-AR
 export function formatearPrecio(precio) {
     const num = precioANumero(precio);
     return "$ " + num.toLocaleString("es-AR", {

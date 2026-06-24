@@ -18,8 +18,8 @@
                 <p class="error"><%= error %></p>
             <% } %>
             <form method="POST" action="/admin/login">
-                <label for="usuario">Usuario:</label>
-                <input type="text" id="usuario" name="usuario" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
 
                 <label for="password">Contraseña:</label>
                 <input type="password" id="password" name="password" required>

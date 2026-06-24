@@ -5,6 +5,7 @@ const btnConfirmar = document.getElementById("confirmarModalOk");
 
 let form = null;
 
+//  submit de baja oactivar y abre el modal antes d envio
 document.addEventListener("submit", (e) => {
     const formulario = e.target.closest(".bajaForm, .activarForm");
     if (!formulario) return;
@@ -23,11 +24,13 @@ document.addEventListener("submit", (e) => {
     confirmarModal.classList.add("mostrar");
 });
 
+//cierra modal
 btnCancelar.addEventListener("click", () => {
     form = null;
     confirmarModal.classList.remove("mostrar");
 });
 
+//confirma y manda el form
 btnConfirmar.addEventListener("click", () => {
     if (form) {
         form.submit();

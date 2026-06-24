@@ -1,9 +1,10 @@
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
 import {listarProductosBackoffice,activarProducto,crearProducto,darBajaProducto,editarProducto,obtenerProductoBackoffice} from "../services/backofficeService.js";
-import { listarVentasBackoffice, listarVentaProductosBackoffice, obtenerVentaConDetalle } from "../services/ventasService.js";
+import { listarVentaProductosBackoffice } from "../services/ventasService.js";
 import {armarPaginado,LIMITE_POR_DEFECTO_ADMIN,normalizarBusqueda,parsearConsultaPaginacion} from "../utils/paginacion.js";
 
+//pagina productos del backofficeactivos e inactivos con busqueda opcional
 async function paginarProductosAdmin({ Model, req, res, errorTag }) {
     const { page, limit, offset } = parsearConsultaPaginacion(req.query, LIMITE_POR_DEFECTO_ADMIN);
     const q = normalizarBusqueda(req.query.q);
@@ -32,6 +33,7 @@ async function paginarProductosAdmin({ Model, req, res, errorTag }) {
     }
 }
 
+//lista accesorios para el panel admin via json
 const obtenerAccesorios = (req, res) =>
     paginarProductosAdmin({
         Model: Accesorio,
@@ -39,6 +41,7 @@ const obtenerAccesorios = (req, res) =>
         res,
         errorTag: "accesorios admin"
     });
+
 
 const obtenerAlimentos = (req, res) =>
     paginarProductosAdmin({
@@ -48,6 +51,7 @@ const obtenerAlimentos = (req, res) =>
         errorTag: "alimentos admin"
     });
 
+//trae lineas de venta-producto paginadas, filtra x cliente o fecha
 const obtenerVentaProductos = async (req, res) => {    const { page, limit, offset } = parsearConsultaPaginacion(req.query, LIMITE_POR_DEFECTO_ADMIN);
     const q = normalizarBusqueda(req.query.q ?? req.query.buscarVen);
     const fecha = normalizarBusqueda(req.query.fecha ?? req.query.buscarFechaVen);
@@ -77,59 +81,7 @@ const obtenerVentaProductos = async (req, res) => {    const { page, limit, offs
     }
 };
 
-const obtenerVentas = async (req, res) => {
-    const { page, limit, offset } = parsearConsultaPaginacion(req.query, LIMITE_POR_DEFECTO_ADMIN);
-    const q = normalizarBusqueda(req.query.q ?? req.query.buscarVen);
-    const fecha = normalizarBusqueda(req.query.fecha ?? req.query.buscarFechaVen);
-
-    try {
-        const { items, total, totalInventario } = await listarVentasBackoffice({
-            page,
-            limit,
-            offset,
-            q,
-            fecha
-        });
-
-        return res.json({
-            ok: true,
-            items,
-            paginado: armarPaginado({ page, limit, total }),
-            q,
-            fecha,
-            totalInventario
-        });
-    } catch (e) {
-        return res.status(500).json({
-            error: "error al obtener ventas admin",
-            details: e.message
-        });
-    }
-};
-
-const obtenerVentaPorId = async (req, res) => {
-    const ventaId = Number(req.params.id);
-
-    if (!Number.isInteger(ventaId) || ventaId <= 0) {
-        return res.status(400).json({ error: "id de venta inválido" });
-    }
-
-    try {
-        const venta = await obtenerVentaConDetalle(ventaId);
-
-        if (!venta) {
-            return res.status(404).json({ error: "venta no encontrada" });
-        }
-
-        return res.json({ ok: true, venta });
-    } catch (e) {
-        return res.status(500).json({
-            error: "error al obtener venta admin",
-            details: e.message
-        });
-    }
-};
-
+// crea producto desde la api del admin
 const crearProductoApi = async (req, res) => {
     const { tipo, nombre, descripcion, precioNum } = req.body;
 
@@ -151,6 +103,7 @@ const crearProductoApi = async (req, res) => {
     }
 };
 
+//  trae un producto puntual por tipo e id para editar en el front
 const obtenerProductoApi = async (req, res) => {
     const { tipo, id } = req.params;
 
@@ -170,6 +123,7 @@ const obtenerProductoApi = async (req, res) => {
     }
 };
 
+//actualiza producto existente desde la api admin
 const editarProductoApi = async (req, res) => {
     const { tipo: tipoOriginal, id } = req.params;
     const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
@@ -198,6 +152,7 @@ const editarProductoApi = async (req, res) => {
     }
 };
 
+//baja logica de producto via api
 const darBajaProductoApi = async (req, res) => {
     const { tipo, id } = req.params;
 
@@ -217,6 +172,7 @@ const darBajaProductoApi = async (req, res) => {
     }
 };
 
+//     reactiva producto dado de baja via api
 const activarProductoApi = async (req, res) => {
     const { tipo, id } = req.params;
 
@@ -240,8 +196,6 @@ export default {
     obtenerAccesorios,
     obtenerAlimentos,
     obtenerVentaProductos,
-    obtenerVentas,
-    obtenerVentaPorId,
     crearProductoApi,
     obtenerProductoApi,
     editarProductoApi,

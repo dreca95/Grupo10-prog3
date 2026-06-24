@@ -9,14 +9,10 @@ import sequelize from "../config/database.js";
 import { precioANumero } from "../utils/precio.js";
 import { crearTokenTicket, invalidarTicketToken } from "../utils/ticketTokens.js";
 import { agregarDetalleVenta, obtenerVentaConDetalle } from "../services/ventasService.js";
-import {
-  armarPaginado,
-  LIMITE_POR_DEFECTO_CATALOGO,
-  normalizarBusqueda,
-  parsearConsultaPaginacion
-} from "../utils/paginacion.js";
+import {armarPaginado,LIMITE_POR_DEFECTO_CATALOGO,normalizarBusqueda,parsearConsultaPaginacion} from "../utils/paginacion.js";
 
-// Se obtienen productos paginados desde al API
+const MAX_CANTIDAD_ITEM = 100;
+//trae productos paginados del catalogo publico, filtra x nombre en base a query escrita por usr
 async function paginarProductos({ Model, req, res, errorTag }) {
   const { page, limit, offset } = parsearConsultaPaginacion(req.query, LIMITE_POR_DEFECTO_CATALOGO);
   const q = normalizarBusqueda(req.query.q);
@@ -49,6 +45,7 @@ async function paginarProductos({ Model, req, res, errorTag }) {
   }
 }
 
+// endpoint activos paginados
 const getAccesorios = async (req, res) => {
  
   return paginarProductos({
@@ -58,6 +55,7 @@ const getAccesorios = async (req, res) => {
     errorTag: "accesorios"
   });
 };
+
 
 const getAlimentos = async (req, res) => {
 
@@ -69,13 +67,15 @@ const getAlimentos = async (req, res) => {
   });
 };
 
+// formatea un numero a pesos argentinos
 function money(n) {
   const safe = precioANumero(n);
   return safe.toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 }
 
+//  convierte fecha a string en horario argentina
 function formatDateTime(value) {
-  // Fuerza zona horaria Argentina para evitar desfases (DB suele guardar en UTC)
+ 
   const d = new Date(value);
   const parts = new Intl.DateTimeFormat("es-AR", {
     timeZone: "America/Argentina/Buenos_Aires",
@@ -88,14 +88,15 @@ function formatDateTime(value) {
     hour12: false
   }).formatToParts(d);
 
+  // obtienedatetime formateado x tipo (day, month, etc)
   const get = (t) => parts.find((p) => p.type === t)?.value || "00";
   return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get(
     "minute"
   )}:${get("second")}`;
 }
 
-const MAX_CANTIDAD_ITEM = 100;
 
+// valida items del carrito, busca productos en db y arma el detalle limpio
 async function resolverItemsVenta(items, transaction) {
   const normalizados = items.map((it) => ({
     id: Number(it.id) || 0,
@@ -168,7 +169,7 @@ async function resolverItemsVenta(items, transaction) {
   return { clean };
 }
 
-// POST /api/ventas (guarda cabecera en VENTAS + detalle en VENTA_PRODUCTOS)
+// crea la venta en db con transaccion, cabecera + detalle + token del ticket
 const crearVenta = async (req, res) => {
   const t = await sequelize.transaction();
 
@@ -181,14 +182,14 @@ const crearVenta = async (req, res) => {
 
     const clean = resuelto.clean;
 
-    // Calcular totales para la cabecera (tabla VENTAS)
+    //Calcular totales para la cabecera (tabla VENTAS)
     const cantidadTotal = clean.reduce((a, it) => a + it.cantidad, 0);
     const total = clean.reduce((a, it) => a + it.precio * it.cantidad, 0);
     const descripcion = clean
       .map((it) => `${it.nombre} x${it.cantidad}`)
       .join(", ");
 
-    // Insert cabecera (tabla VENTAS)
+    //Insert cabecera (tabla VENTAS)
     const venta = await Venta.create(
       {
         cliente: req.ventaCliente,
@@ -200,13 +201,13 @@ const crearVenta = async (req, res) => {
       { transaction: t }
     );
 
-    // Insert detalle (tabla VENTA_PRODUCTOS) vía relaciones Sequelize
+    //Insert detalle (tabla VENTA_PRODUCTOS) vía relaciones Sequelize
     await agregarDetalleVenta(venta, clean, t);
 
-    // Confirmar todo junto: si falla algo antes, no queda nada guardado
+    //Confirmar todo junto: si falla algo antes, no queda nada guardado
     await t.commit();
 
-    // Gestión de ticket
+    //Gestión de ticket
     const token = crearTokenTicket(venta.id);
 
     return res.json({
@@ -232,7 +233,7 @@ const crearVenta = async (req, res) => {
 };
 
 
-// GET /api/ventas/:id?token=...
+// devuelve una venta con su detalle si existe
 const getVenta = async (req, res) => {
   try {
     const venta = await obtenerVentaConDetalle(req.ventaId);
@@ -244,7 +245,7 @@ const getVenta = async (req, res) => {
   }
 };
 
-// GET /api/ventas/:id/ticket.pdf?token=...
+// genera el pdf del ticket con puppeteer y lo manda como descarga
 const descargarTicketPdf = async (req, res) => {
   try {
     const id = req.ventaId;
@@ -303,13 +304,14 @@ const descargarTicketPdf = async (req, res) => {
 };
 
 
+// crea un admin nuevo con pass hasheada 
 const crearAdministrador = async (req, res) => {
   try {
-    const { usuario, password } = req.body;
+    const { email, password } = req.body;
 
     const hash = await bcrypt.hash(password, 10);
     const admin = await Administrador.create({
-      usuario,
+      email,
       password: hash
     });
 
@@ -317,7 +319,7 @@ const crearAdministrador = async (req, res) => {
       ok: true,
       administrador: {
         id: admin.id,
-        usuario: admin.usuario
+        email: admin.email
       }
     });
   } catch (e) {

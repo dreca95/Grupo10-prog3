@@ -41,6 +41,7 @@ app.get("/", (req, res) => {
     res.sendFile("index.html", { root: "./client" });
 });
 
+// atrapa errores de la api y responde json, el resto lo sigue express
 app.use((err, req, res, next) => {
     if (!req.originalUrl.startsWith("/api")) {
         return next(err);

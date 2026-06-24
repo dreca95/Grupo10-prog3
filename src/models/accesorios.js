@@ -7,7 +7,7 @@ const Accesorio = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING },
-    // En Railway suele venir como DECIMAL / NUMERIC
+    // En Railway suele venir como DECIMAL 
     precio: { type: DataTypes.DECIMAL },
     descripcion: { type: DataTypes.STRING },
     imagen: { type: DataTypes.STRING },

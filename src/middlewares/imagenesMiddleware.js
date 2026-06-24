@@ -9,10 +9,12 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 }
 });
 
+// magic bytes: para ver si es jpeg de verdad
 function esJpeg(buffer) {
     return buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
 }
 
+// para png 
 function esPng(buffer) {
     return (
         buffer.length >= 8 &&
@@ -23,10 +25,12 @@ function esPng(buffer) {
     );
 }
 
+//  acepta jpeg o png nomas
 function esImagenReal(buffer) {
     return esJpeg(buffer) || esPng(buffer);
 }
 
+//valida extension y contenido real de la imagen (m html backoffice)
 function validarImagen(req, res, next) {
     if (!req.file) {
         return next();
@@ -45,6 +49,7 @@ function validarImagen(req, res, next) {
     next();
 }
 
+// misma validacion pero responde json para la api admin
 function validarImagenApi(req, res, next) {
     if (!req.file) {
         return next();
@@ -63,6 +68,7 @@ function validarImagenApi(req, res, next) {
     next();
 }
 
+// multer imagen yvalidacion para rutas api de productos
 export function subirImagenProductoApi(req, res, next) {
     upload.single("imagen")(req, res, (err) => {
         if (err) {
@@ -77,6 +83,7 @@ export function subirImagenProductoApi(req, res, next) {
     });
 }
 
+//multer single imagen y validacion para formularios html del backoffice
 export function subirImagenProducto(req, res, next) {
     upload.single("imagen")(req, res, (err) => {
         if (err) {

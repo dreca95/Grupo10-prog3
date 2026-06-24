@@ -13,8 +13,6 @@ router.get("/alimentos", apiController.getAlimentos);
 
 router.get("/admin/accesorios", verificarAdminApi, adminApiController.obtenerAccesorios);
 router.get("/admin/alimentos", verificarAdminApi, adminApiController.obtenerAlimentos);
-router.get("/admin/ventas", verificarAdminApi, adminApiController.obtenerVentas);
-router.get("/admin/ventas/:id", verificarAdminApi, adminApiController.obtenerVentaPorId);
 router.get("/admin/venta-productos", verificarAdminApi, adminApiController.obtenerVentaProductos);
 
 router.post("/admin/productos",verificarAdminApi,subirImagenProductoApi,validarProductoApi,validarProductoDuplicadoApi,adminApiController.crearProductoApi);

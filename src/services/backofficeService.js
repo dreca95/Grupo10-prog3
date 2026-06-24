@@ -4,6 +4,7 @@ import { modeloPorTipo, obtenerProductoPorId } from "./productoService.js";
 import { precioANumero } from "../utils/precio.js";
 import { copiarImagenProducto, eliminarImagenLocal, guardarImagenLocal } from "./imagenProductoService.js";
 
+// lista productos del backoffice con busqueda y paginacion
 export async function listarProductosBackoffice({ Model, page, limit, offset, q }) {
     const busqueda = normalizarBusqueda(q);
     const where = {};
@@ -31,6 +32,7 @@ export async function listarProductosBackoffice({ Model, page, limit, offset, q 
     };
 }
 
+// trae un producto activo con precio numerico y tipo
 export async function obtenerProductoBackoffice(tipo, id) {
     const producto = await obtenerProductoPorId(tipo, id);
 
@@ -45,6 +47,7 @@ export async function obtenerProductoBackoffice(tipo, id) {
     return data;
 }
 
+// crea producto en db y sube imagen si vino file
 export async function crearProducto({ tipo, nombre, descripcion, precio, file }) {
     const model = modeloPorTipo(tipo);
     const creado = await model.create({
@@ -64,6 +67,7 @@ export async function crearProducto({ tipo, nombre, descripcion, precio, file })
     return data;
 }
 
+// edita producto, si cambia tipo crea nuevo y migra imagen
 export async function editarProducto({
     tipoOriginal,
     id,
@@ -126,6 +130,7 @@ export async function editarProducto({
     return data;
 }
 
+// baja logica: estado false, no borra de la db
 export async function darBajaProducto(tipo, id) {
     const producto = await obtenerProductoPorId(tipo, id);
 
@@ -141,6 +146,7 @@ export async function darBajaProducto(tipo, id) {
     return data;
 }
 
+// reactiva producto q estaba dado de baja
 export async function activarProducto(tipo, id) {
     const producto = await obtenerProductoPorId(tipo, id);
 
