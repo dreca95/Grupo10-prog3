@@ -153,7 +153,10 @@
         row.appendChild(removeBtn);
 
         btnAdd.addEventListener("click", () => {
-          __cart.addItem(it);
+          if (!__cart.addItem(it)) {
+            alert(`Máximo ${__cart.MAX_CANTIDAD_ITEM} unidades por producto.`);
+            return;
+          }
           render();
         });
 
@@ -181,6 +184,11 @@
       const cart = __cart.loadCart();
       if (!cart.items.length) {
         alert("El carrito está vacío.");
+        return;
+      }
+
+      if (!__cart.cantidadesValidas()) {
+        alert(`Cada producto puede tener entre 1 y ${__cart.MAX_CANTIDAD_ITEM} unidades.`);
         return;
       }
 

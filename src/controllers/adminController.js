@@ -56,18 +56,44 @@ const adminController = {
 
 
     backofficeGet: async (req, res) => {
-        const datos = await obtenerDatosBackoffice(req.query);
-        const cookie = leerCookie(req, res);
+        try {
+            const datos = await obtenerDatosBackoffice(req.query);
+            const cookie = leerCookie(req, res);
 
-        return res.render("admin/indexBackoffice", {
-            accesorios: datos.accesorios,
-            alimentos: datos.alimentos,
-            pagAcc: datos.pagAcc,
-            pagAli: datos.pagAli,
-            buscarAcc: datos.buscarAcc,
-            buscarAli: datos.buscarAli,
-            cookie
-        });
+            return res.render("admin/indexBackoffice", {
+                accesorios: datos.accesorios,
+                alimentos: datos.alimentos,
+                pagAcc: datos.pagAcc,
+                pagAli: datos.pagAli,
+                buscarAcc: datos.buscarAcc,
+                buscarAli: datos.buscarAli,
+                cookie
+            });
+        } catch (err) {
+            console.error("Error en backoffice:", err);
+
+            const pagVacio = {
+                totalInventario: 0,
+                total: 0,
+                numPagina: 0,
+                hayAnterior: false,
+                haySiguiente: false,
+                sigPrimera: 0,
+                sigUltima: 0,
+                antPrimera: 0,
+                antUltima: 0
+            };
+
+            return res.render("admin/indexBackoffice", {
+                accesorios: [],
+                alimentos: [],
+                pagAcc: pagVacio,
+                pagAli: pagVacio,
+                buscarAcc: "",
+                buscarAli: "",
+                cookie: { tipo: "error", mensaje: "No se pudo cargar el backoffice" }
+            });
+        }
     },
 
     ventasGet: async (req, res) => {

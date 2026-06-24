@@ -3,6 +3,8 @@ import { validarTokenTicket } from "../utils/ticketTokens.js";
 
 const MAX_LONGITUD_CLIENTE = 100;
 const MAX_LONGITUD_USUARIO = 50;
+const MAX_CANTIDAD_ITEM = 100;
+const TIPOS_ITEM = new Set(["accesorio", "alimento"]);
 
 export function validarVentaIdParam(req, res, next) {
     const id = Number(req.params.id);
@@ -42,6 +44,28 @@ export function validarCrearVenta(req, res, next) {
 
     if (!Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ error: "items requerido" });
+    }
+
+    for (const it of items) {
+        if (!it || typeof it !== "object") {
+            return res.status(400).json({ error: "item inválido" });
+        }
+
+        const id = Number(it.id);
+        const tipo = String(it.tipo ?? "").trim().toLowerCase();
+        const cantidad = Number(it.cantidad);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({ error: "id de producto inválido" });
+        }
+        if (!TIPOS_ITEM.has(tipo)) {
+            return res.status(400).json({ error: "tipo de producto inválido" });
+        }
+        if (!Number.isInteger(cantidad) || cantidad <= 0 || cantidad > MAX_CANTIDAD_ITEM) {
+            return res.status(400).json({
+                error: `cantidad inválida (máximo ${MAX_CANTIDAD_ITEM} por producto)`
+            });
+        }
     }
 
     req.ventaCliente = clienteTrim;

@@ -65,22 +65,27 @@ function formatDateTime(value) {
   )}:${get("second")}`;
 }
 
-async function resolverItemsVenta(items, transaction) {
-  const normalizados = items
-    .map((it) => ({
-      id: Number(it.id) || 0,
-      tipo: String(it.tipo ?? "").trim().toLowerCase(),
-      cantidad: Number(it.cantidad) || 0
-    }))
-    .filter(
-      (it) =>
-        it.id > 0 &&
-        (it.tipo === "accesorio" || it.tipo === "alimento") &&
-        it.cantidad > 0
-    );
+const MAX_CANTIDAD_ITEM = 100;
 
-  if (!normalizados.length) {
-    return { error: "items inválidos" };
+async function resolverItemsVenta(items, transaction) {
+  const normalizados = items.map((it) => ({
+    id: Number(it.id) || 0,
+    tipo: String(it.tipo ?? "").trim().toLowerCase(),
+    cantidad: Number(it.cantidad) || 0
+  }));
+
+  if (
+    normalizados.some(
+      (it) =>
+        !Number.isInteger(it.id) ||
+        it.id <= 0 ||
+        (it.tipo !== "accesorio" && it.tipo !== "alimento") ||
+        !Number.isInteger(it.cantidad) ||
+        it.cantidad <= 0 ||
+        it.cantidad > MAX_CANTIDAD_ITEM
+    )
+  ) {
+    return { error: `items inválidos (máximo ${MAX_CANTIDAD_ITEM} por producto)` };
   }
 
   const idsAcc = [

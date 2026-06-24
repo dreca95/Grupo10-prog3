@@ -1,6 +1,7 @@
 // Carrito simple en localStorage (flujo inicial)
 // Clave: mascotero_cart
 const CART_KEY = "mascotero_cart";
+const MAX_CANTIDAD_ITEM = 100;
 
 function loadCart() {
   try {
@@ -40,12 +41,15 @@ function addItem(item) {
   const existing = cart.items.find((x) => keyOf(x.tipo, x.id) === k);
 
   if (existing) {
+    if (existing.cantidad >= MAX_CANTIDAD_ITEM) return false;
     existing.cantidad += 1;
     if (it.img) existing.img = it.img;
-  } else cart.items.push({ ...it, cantidad: 1 });
+  } else {
+    cart.items.push({ ...it, cantidad: 1 });
+  }
 
   saveCart(cart);
-  return cart;
+  return true;
 }
 
 function removeItem(tipo, id) {
@@ -65,7 +69,7 @@ function removeItem(tipo, id) {
 function setQuantity(tipo, id, cantidad) {
   const cart = loadCart();
   const k = keyOf(tipo, id);
-  const q = Number(cantidad) || 0;
+  const q = Math.min(MAX_CANTIDAD_ITEM, Math.max(0, Number(cantidad) || 0));
 
   const existing = cart.items.find((x) => keyOf(x.tipo, x.id) === k);
   if (!existing) return cart;
@@ -75,6 +79,14 @@ function setQuantity(tipo, id, cantidad) {
 
   saveCart(cart);
   return cart;
+}
+
+function cantidadesValidas() {
+  const cart = loadCart();
+  return cart.items.every((it) => {
+    const q = Number(it.cantidad) || 0;
+    return Number.isInteger(q) && q > 0 && q <= MAX_CANTIDAD_ITEM;
+  });
 }
 
 function clearCart() {
@@ -124,5 +136,7 @@ window.__cart = {
   getTotalCount,
   getTotalPrice,
   getItemQuantity,
-  updateCartBadge
+  cantidadesValidas,
+  updateCartBadge,
+  MAX_CANTIDAD_ITEM
 };

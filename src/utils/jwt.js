@@ -1,13 +1,21 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const jwtSecreto = process.env.JWT_SECRETO?.trim();
+
+if (!jwtSecreto) {
+    console.error("ERROR: JWT_SECRETO no está definido. Agregalo en el archivo .env");
+    process.exit(1);
+}
 
 // Cambia en cada reinicio del servidor: invalida tokens emitidos antes.
 const SERVER_SESSION_ID = crypto.randomBytes(16).toString("hex");
 
 // Clave secreta para firmar (debe ser Uint8Array)
-const secret = new TextEncoder().encode(
-    (process.env.JWT_SECRETO).trim()
-);
+const secret = new TextEncoder().encode(jwtSecreto);
 
 
 export async function generarJWT(payload) {

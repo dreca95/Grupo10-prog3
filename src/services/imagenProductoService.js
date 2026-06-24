@@ -20,6 +20,15 @@ export function guardarImagenLocal(tipo, id, file) {
 
     fs.writeFileSync(path.join(carpeta, `${base}${ext}`), file.buffer);
 
+    for (const otraExt of extensiones) {
+        if (otraExt === ext) continue;
+        try {
+            fs.unlinkSync(path.join(carpeta, `${base}${otraExt}`));
+        } catch {
+            // no había archivo con esa extensión
+        }
+    }
+
     return imagenRuta(tipo, id, ext);
 }
 
