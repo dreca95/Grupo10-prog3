@@ -6,13 +6,20 @@ import sequelize from './src/config/database.js'; // Carga las variables de ento
 import dotenv from "dotenv";
 import apiRouter from "./src/routes/apiRoutes.js";
 import cookieParser from "cookie-parser";
-import "./src/models/associations.js";
+import cors from "cors";
 
 
 dotenv.config();
 const app = express(); // Instancia de la aplicaci?n Express
 const PORT = process.env.PORT; // Obtiene el puerto desde las variables de entorno (.env)
 
+const corsOptions = {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json()); // Habilita el uso de datos JSON en las solicitudes
 app.use(express.urlencoded({ extended: true })); // Habilita el uso de datos URL en las solicitudes
 app.use(cookieParser());

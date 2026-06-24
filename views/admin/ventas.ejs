@@ -1,95 +1,95 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta charset="UTF-8">
-    <title>Venta productos - Mascotero</title>
-    <link rel="stylesheet" href="/css/estilos.css">
-    <%- include('../partials/head') %>
-</head>
-
-<body>
-
-    <%- include('../partials/header') %>
-
-        <div class="backofficeContainer">
-            <div class="ventasEncabezado">
-                <button type="button" class="volverBtn" onclick="window.location.href='/admin/backoffice'">Volver al backoffice</button>
-                <h2>Venta productos</h2>
-            </div>
-
-            <p id="vacioVen" hidden>No hay registros en venta productos.</p>
-
-            <div id="contenidoVen" hidden>
-                <div class="ventasBusqueda">
-                    <div class="backofficeBusquedaSeccion">
-                        <label for="buscarVenInput">Buscar por descripción o ID</label>
-                        <div class="backofficeBusquedaFila">
-                            <input type="search" id="buscarVenInput" placeholder="Nombre del producto o ID del producto" autocomplete="off" />
-                        </div>
-                        <label for="buscarFechaVenInput">Buscar por fecha</label>
-                        <div class="backofficeBusquedaFila">
-                            <input type="date" id="buscarFechaVenInput" />
-                        </div>
-                        <div class="backofficeBusquedaFila">
-                            <button type="button" id="buscarVenBtn" class="buscarBtn">Buscar</button>
-                            <button type="button" id="limpiarVenBtn" class="limpiarBusquedaBtn" hidden>Limpiar</button>
-                        </div>
-                    </div>
-                </div>
-
-                <p id="sinCoincidenciasVen" class="sinCoincidenciasBusqueda" hidden>No hay coincidencias.</p>
-
-                <div id="tablaVenWrap" class="ventasTabla">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>ID Venta</th>
-                                <th>ID Accesorio</th>
-                                <th>ID Alimento</th>
-                                <th>Descripción</th>
-                                <th>Cantidad</th>
-                                <th>Precio unitario</th>
-                                <th>Precio total</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodyVen"></tbody>
-                    </table>
-                </div>
-
-                <div class="pagination">
-                    <a id="prevVen" href="#" class="disabled">Anterior</a>
-                    <span id="pageTextVen">Página 0</span>
-                    <a id="nextVen" href="#">Siguiente</a>
-                </div>
-            </div>
-        </div>
-
-        <script src="/js/paginadoAdmin.js"></script>
-        <script>
-            const ventas = __paginadoAdmin.iniciarVentas({
-                apiUrl: "/api/admin/venta-productos",
-                tbodyId: "tbodyVen",
-                prevId: "prevVen",
-                nextId: "nextVen",
-                pageTextId: "pageTextVen",
-                buscarInputId: "buscarVenInput",
-                buscarFechaInputId: "buscarFechaVenInput",
-                buscarBtnId: "buscarVenBtn",
-                limpiarBtnId: "limpiarVenBtn",
-                sinCoincidenciasId: "sinCoincidenciasVen",
-                vacioId: "vacioVen",
-                contenidoId: "contenidoVen",
-                tablaWrapId: "tablaVenWrap"
-            });
-
-            window.addEventListener("load", () => {
-                ventas.cargarVentas();
-            });
-        </script>
-
-</body>
-
-</html>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Venta productos - Mascotero</title>
+    <link rel="stylesheet" href="/css/estilos.css">
+    <%- include('../partials/head') %>
+</head>
+
+<body>
+
+    <%- include('../partials/header') %>
+
+        <div class="backofficeContainer">
+            <div class="ventasEncabezado">
+                <button type="button" class="volverBtn" onclick="window.location.href='/admin/backoffice'">Volver al backoffice</button>
+                <h2>Venta productos</h2>
+            </div>
+
+            <p id="vacioVen" hidden>No hay registros en venta productos.</p>
+
+            <div id="contenidoVen" hidden>
+                <div class="ventasBusqueda">
+                    <div class="backofficeBusquedaSeccion">
+                        <label for="buscarVenInput">Buscar por descripción cliente o ID de venta</label>
+                        <div class="backofficeBusquedaFila">
+                            <input type="search" id="buscarVenInput" placeholder="Cliente, ID de venta o nombre del producto" autocomplete="off" />
+                        </div>
+                        <label for="buscarFechaVenInput">Buscar por fecha</label>
+                        <div class="backofficeBusquedaFila">
+                            <input type="date" id="buscarFechaVenInput" />
+                        </div>
+                        <div class="backofficeBusquedaFila">
+                            <button type="button" id="buscarVenBtn" class="buscarBtn">Buscar</button>
+                            <button type="button" id="limpiarVenBtn" class="limpiarBusquedaBtn" hidden>Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="sinCoincidenciasVen" class="sinCoincidenciasBusqueda" hidden>No hay coincidencias.</p>
+
+                <div id="tablaVenWrap" class="ventasTabla">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>ID Venta</th>
+                                <th>ID Accesorio</th>
+                                <th>ID Alimento</th>
+                                <th>Descripción</th>
+                                <th>Cantidad</th>
+                                <th>Precio unitario</th>
+                                <th>Precio total</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyVen"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <a id="prevVen" href="#" class="disabled">Anterior</a>
+                    <span id="pageTextVen">Página 0</span>
+                    <a id="nextVen" href="#">Siguiente</a>
+                </div>
+            </div>
+        </div>
+
+        <script src="/js/paginadoAdmin.js"></script>
+        <script>
+            const ventas = __paginadoAdmin.iniciarVentas({
+                apiUrl: "/api/admin/ventas",
+                tbodyId: "tbodyVen",
+                prevId: "prevVen",
+                nextId: "nextVen",
+                pageTextId: "pageTextVen",
+                buscarInputId: "buscarVenInput",
+                buscarFechaInputId: "buscarFechaVenInput",
+                buscarBtnId: "buscarVenBtn",
+                limpiarBtnId: "limpiarVenBtn",
+                sinCoincidenciasId: "sinCoincidenciasVen",
+                vacioId: "vacioVen",
+                contenidoId: "contenidoVen",
+                tablaWrapId: "tablaVenWrap"
+            });
+
+            window.addEventListener("load", () => {
+                ventas.cargarVentas();
+            });
+        </script>
+
+</body>
+
+</html>

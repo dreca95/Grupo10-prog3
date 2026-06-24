@@ -1,19 +1,16 @@
-const NOMBRE_COOKIE = "flash";
-
-const OPCIONES_COOKIE = {
-    maxAge: 5000,
-    httpOnly: true
-};
-
 function setCookie(res, tipo, mensaje) {
-    res.cookie(NOMBRE_COOKIE, JSON.stringify({ tipo, mensaje }), OPCIONES_COOKIE);
+    res.cookie("flash", JSON.stringify({ tipo, mensaje }), {
+        maxAge: 5000,
+        httpOnly: true,
+        secure: true
+    });
 }
 
 export function leerCookie(req, res) {
-    const raw = req.cookies[NOMBRE_COOKIE];
+    const raw = req.cookies.flash;
     if (!raw) return null;
 
-    res.clearCookie(NOMBRE_COOKIE);
+    res.clearCookie("flash", { httpOnly: true, secure: true });
 
     try {
         return JSON.parse(raw);

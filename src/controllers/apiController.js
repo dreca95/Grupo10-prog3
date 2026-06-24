@@ -1,7 +1,6 @@
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
 import Venta from "../models/ventas.js";
-import VentaProductos from "../models/ventaProductos.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
@@ -9,8 +8,9 @@ import { Op } from "sequelize";
 import sequelize from "../config/database.js";
 import { precioANumero } from "../utils/precio.js";
 import { crearTokenTicket, invalidarTicketToken } from "../utils/ticketTokens.js";
+import { agregarDetalleVenta, obtenerVentaConDetalle } from "../services/ventasService.js";
 import {
-  construirPaginado,
+  armarPaginado,
   LIMITE_POR_DEFECTO_CATALOGO,
   normalizarBusqueda,
   parsearConsultaPaginacion
@@ -38,7 +38,7 @@ async function paginarProductos({ Model, req, res, errorTag }) {
     return res.json({
       ok: true,
       items: result.rows,
-      paginado: construirPaginado({ page, limit, total: result.count }),
+      paginado: armarPaginado({ page, limit, total: result.count }),
       q
     });
   } catch (e) {
@@ -200,17 +200,8 @@ const crearVenta = async (req, res) => {
       { transaction: t }
     );
 
-    // Insert detalle (tabla VENTA_PRODUCTOS)
-    const detalle = clean.map((it) => ({
-      id_venta: venta.id,
-      id_accesorio: it.tipo === "accesorio" ? it.id : null,
-      id_alimento: it.tipo === "alimento" ? it.id : null,
-      cantidad: it.cantidad,
-      precio_unitario: it.precio,
-      precio_total: it.precio * it.cantidad
-    }));
-
-    await VentaProductos.bulkCreate(detalle, { transaction: t });
+    // Insert detalle (tabla VENTA_PRODUCTOS) vía relaciones Sequelize
+    await agregarDetalleVenta(venta, clean, t);
 
     // Confirmar todo junto: si falla algo antes, no queda nada guardado
     await t.commit();
@@ -244,7 +235,7 @@ const crearVenta = async (req, res) => {
 // GET /api/ventas/:id?token=...
 const getVenta = async (req, res) => {
   try {
-    const venta = await Venta.findByPk(req.ventaId);
+    const venta = await obtenerVentaConDetalle(req.ventaId);
     if (!venta) return res.status(404).json({ error: "venta no encontrada" });
 
     return res.json({ ok: true, venta });

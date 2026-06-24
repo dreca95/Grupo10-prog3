@@ -260,6 +260,45 @@ function crearPaginadorVentasAdmin({
         return Boolean((terminoBusqueda || "").trim() || (terminoFecha || "").trim());
     }
 
+    function convertirAFilas(ventas) {
+        const filas = [];
+
+        ventas.forEach((venta) => {
+            const productos = Array.isArray(venta.productos) ? venta.productos : [];
+
+            if (!productos.length) {
+                filas.push({
+                    id: "-",
+                    id_venta: venta.id,
+                    id_accesorio: "-",
+                    id_alimento: "-",
+                    descripcion: venta.descripcion ?? "-",
+                    cantidad: venta.cantidad ?? "-",
+                    precioUnitarioFormateado: "-",
+                    precioFormateado: venta.precioFormateado ?? "-",
+                    fechaFormateada: venta.fechaFormateada ?? "-"
+                });
+                return;
+            }
+
+            productos.forEach((producto) => {
+                filas.push({
+                    id: producto.id,
+                    id_venta: venta.id,
+                    id_accesorio: producto.id_accesorio ?? "-",
+                    id_alimento: producto.id_alimento ?? "-",
+                    descripcion: producto.descripcion,
+                    cantidad: producto.cantidad,
+                    precioUnitarioFormateado: producto.precioUnitarioFormateado,
+                    precioFormateado: producto.precioFormateado,
+                    fechaFormateada: venta.fechaFormateada
+                });
+            });
+        });
+
+        return filas;
+    }
+
     async function cargarVentas() {
         if (loading) return;
         loading = true;
@@ -304,7 +343,18 @@ function crearPaginadorVentasAdmin({
                 return;
             }
 
-            items.forEach((vp) => {
+            const filas = convertirAFilas(items);
+
+            if (!filas.length) {
+                if (hayBusquedaActiva()) {
+                    sinCoincidencias.hidden = false;
+                }
+                tablaWrap.hidden = true;
+                actualizarBotones();
+                return;
+            }
+
+            filas.forEach((vp) => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                     <td>${escaparHtml(vp.id)}</td>

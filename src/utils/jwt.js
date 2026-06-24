@@ -45,13 +45,14 @@ export async function verificarJWT(token) {
 export function guardarToken(res, token) {
     res.cookie("adminToken", token, {
         httpOnly: true,
+        secure: true,
         maxAge: 5 * 60 * 1000
     });
 }
 
 
 export function borrarToken(res) {
-    res.clearCookie("adminToken");
+    res.clearCookie("adminToken", { httpOnly: true, secure: true });
 }
 
 export function obtenerToken(req) {

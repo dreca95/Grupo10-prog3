@@ -11,7 +11,7 @@ export function acotar(n, min, max) {
     return Math.max(min, Math.min(max, n));
 }
 
-export function construirPaginado({ page, limit, total }) {
+export function armarPaginado({ page, limit, total }) {
     const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
 
     return {
