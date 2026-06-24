@@ -1,4 +1,6 @@
-const CANT_POR_PAGINA = 12;
+const CANT_POR_PAGINA = 12; // default (consumo API)
+
+const MAX_LIMIT_API = 50;
 
 function crearPaginadorCatalogo({
     apiUrl,
@@ -21,28 +23,24 @@ function crearPaginadorCatalogo({
     const btnLimpiar = document.getElementById(limpiarBtnId);
     const sinCoincidencias = document.getElementById(sinCoincidenciasId);
 
-    let primera = 0;
-    let ultima = CANT_POR_PAGINA;
-    let arrayTodos = [];
+   
+    // Paginación desde la API
+    let page = 1;
+    let limit = CANT_POR_PAGINA;
     let terminoBusqueda = "";
-
-    function productosFiltrados() {
-        const t = terminoBusqueda.trim().toLowerCase();
-        if (!t) return arrayTodos;
-        return arrayTodos.filter((p) => (p.nombre || "").toLowerCase().includes(t));
-    }
+    let totalPages = 0;
+    let loading = false;
 
     function reiniciarPagina() {
-        primera = 0;
-        ultima = CANT_POR_PAGINA;
+        page = 1;
     }
 
-    function actualizarBotones(lista) {
-        const numPagina = lista.length ? Math.floor(primera / CANT_POR_PAGINA) + 1 : 0;
+    function actualizarBotones() {
+        const numPagina = totalPages > 0 ? page : 0;
         pageText.textContent = "Página " + numPagina;
 
-        anterior.classList.toggle("disabled", primera <= 0);
-        siguiente.classList.toggle("disabled", ultima >= lista.length);
+        anterior.classList.toggle("disabled", page <= 1);
+        siguiente.classList.toggle("disabled", totalPages === 0 || page >= totalPages);
     }
 
     function setCantidadVisible(cantidadEl, cantidad) {
@@ -166,104 +164,84 @@ function crearPaginadorCatalogo({
         return card;
     }
 
-    function mostrarProductos() {
-        grid.replaceChildren();
+    async function cargarProductos() {
+        if (loading) return;
+        loading = true;
+
+        mostrarMensajeGrid("Cargando...");
         sinCoincidencias.hidden = true;
 
-        if (!arrayTodos.length) {
-            mostrarMensajeGrid("No hay productos.");
-            actualizarBotones([]);
-            return;
+        const q = (terminoBusqueda || "").trim();
+        btnLimpiar.hidden = !q;
+
+        const safeLimit = Math.max(1, Math.min(MAX_LIMIT_API, Number(limit) || CANT_POR_PAGINA));
+        const url = `${apiUrl}?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(
+            safeLimit
+        )}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error("No se pudo cargar " + apiUrl);
+            }
+
+            const data = await response.json();
+
+            const items = Array.isArray(data?.items) ? data.items : [];
+
+            totalPages = Number(data?.paginado?.totalPages) || 0;
+            page = Number(data?.paginado?.page) || 1;
+
+            grid.replaceChildren();
+
+            if (!items.length) {
+                if (q) {
+                    sinCoincidencias.hidden = false;
+                } else {
+                    mostrarMensajeGrid("No hay productos.");
+                }
+                actualizarBotones();
+                return;
+            }
+
+            items.forEach((prod) => {
+                grid.appendChild(renderizarCard(prod));
+            });
+
+            actualizarBotones();
+        } catch (e) {
+            mostrarMensajeGrid(e.message, "error");
+        } finally {
+            loading = false;
         }
-
-        const lista = productosFiltrados();
-
-        if (!lista.length) {
-            sinCoincidencias.hidden = false;
-            actualizarBotones([]);
-            return;
-        }
-
-        if (primera >= lista.length) {
-            reiniciarPagina();
-        }
-        if (ultima > lista.length) {
-            ultima = lista.length;
-        }
-        if (ultima <= primera) {
-            ultima = Math.min(primera + CANT_POR_PAGINA, lista.length);
-        }
-
-        const pagina = lista.slice(primera, ultima);
-
-        pagina.forEach((prod) => {
-            grid.appendChild(renderizarCard(prod));
-        });
-
-        actualizarBotones(lista);
     }
 
     function paginaSiguiente() {
-        const lista = productosFiltrados();
-
-        if (ultima < lista.length) {
-            primera += CANT_POR_PAGINA;
-            ultima += CANT_POR_PAGINA;
-
-            if (ultima > lista.length) {
-                ultima = lista.length;
-            }
-
-            mostrarProductos();
+        if (totalPages > 0 && page < totalPages) {
+            page += 1;
+            cargarProductos();
         }
     }
 
     function paginaAnterior() {
-        if (primera > 0) {
-            const lista = productosFiltrados();
-
-            primera -= CANT_POR_PAGINA;
-            if (primera < 0) {
-                primera = 0;
-            }
-            ultima = Math.min(primera + CANT_POR_PAGINA, lista.length);
-
-            mostrarProductos();
+        if (page > 1) {
+            page -= 1;
+            cargarProductos();
         }
     }
 
     function aplicarBusqueda() {
         terminoBusqueda = inputBuscar.value;
         reiniciarPagina();
-        btnLimpiar.hidden = !terminoBusqueda.trim();
-        mostrarProductos();
+        cargarProductos();
     }
 
     function limpiarBusqueda() {
         terminoBusqueda = "";
         inputBuscar.value = "";
-        btnLimpiar.hidden = true;
         reiniciarPagina();
-        mostrarProductos();
-    }
-
-    async function cargarProductos() {
-        mostrarMensajeGrid("Cargando...");
-        sinCoincidencias.hidden = true;
-
-        try {
-            const response = await fetch(apiUrl);
-
-            if (!response.ok) {
-                throw new Error("No se pudo cargar " + apiUrl);
-            }
-
-            arrayTodos = await response.json();
-            reiniciarPagina();
-            mostrarProductos();
-        } catch (e) {
-            mostrarMensajeGrid(e.message, "error");
-        }
+        cargarProductos();
     }
 
     anterior.addEventListener("click", (e) => {

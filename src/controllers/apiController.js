@@ -11,33 +11,89 @@ import { precioANumero } from "../utils/precio.js";
 import { crearTokenTicket, invalidarTicketToken } from "../utils/ticketTokens.js";
 
 
-const getAccesorios = async (req, res) => {
+function parsePositiveInt(value, fallback) {
+  const n = Number(value);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
+}
+
+function buildPaginado({ page, limit, total }) {
+  const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    hasPrev: page > 1 && totalPages > 0,
+    hasNext: page < totalPages
+  };
+}
+
+function normalizarBusqueda(value) {
+  const q = String(value ?? "").trim();
+  return q.length ? q : "";
+}
+
+// Se obtienen productos paginados desde al API
+async function paginarProductos({ Model, req, res, errorTag }) {
+  const page = parsePositiveInt(req.query.page, 1);
+  const limitRaw = parsePositiveInt(req.query.limit, 12);
+  const limit = clamp(limitRaw, 1, 50);
+
+  const q = normalizarBusqueda(req.query.q);
+
+  const where = { estado: true };
+  if (q) {
+    where.nombre = { [Op.iLike]: `%${q}%` };
+  }
+
+  const offset = (page - 1) * limit;
 
   try {
-    const rows = await Accesorio.findAll({
-      where: { estado: true },
+    const result = await Model.findAndCountAll({
+      where,
       order: [["nombre", "ASC"]],
+      limit,
+      offset,
       raw: true
     });
 
-    return res.json(rows);
+    return res.json({
+      ok: true,
+      items: result.rows,
+      paginado: buildPaginado({ page, limit, total: result.count }),
+      q
+    });
+  } catch (e) {
+    return res.status(500).json({
+      error: `error al obtener ${errorTag}`,
+      details: e.message
+    });
   }
-  catch (e) {
-    return res.status(500).json({ error: "error al obtener accesorios", details: e.message });
-  }
+}
+
+const getAccesorios = async (req, res) => {
+ 
+  return paginarProductos({
+    Model: Accesorio,
+    req,
+    res,
+    errorTag: "accesorios"
+  });
 };
 
 const getAlimentos = async (req, res) => {
-  try {
-    const rows = await Alimento.findAll({
-      where: { estado: true },
-      order: [["nombre", "ASC"]],
-      raw: true
-    });
-    return res.json(rows);
-  } catch (e) {
-    return res.status(500).json({ error: "error al obtener alimentos", details: e.message });
-  }
+
+  return paginarProductos({
+    Model: Alimento,
+    req,
+    res,
+    errorTag: "alimentos"
+  });
 };
 
 function money(n) {
