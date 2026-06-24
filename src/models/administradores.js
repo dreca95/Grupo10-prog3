@@ -11,13 +11,3 @@ const Administrador = sequelize.define('ADMINISTRADORES', {
 });
 
 export default Administrador;
-
-/* 
-const hash = await bcrypt.hash("1234", 10);
-
-const admin = await Administrador.create({
-  usuario: "admin",
-  password: hash
-});
-
-console.log("Administrador insertado:", admin.toJSON()); */

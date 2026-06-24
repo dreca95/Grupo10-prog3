@@ -5,7 +5,7 @@ const OPCIONES_COOKIE = {
     httpOnly: true
 };
 
-export function setCookie(res, tipo, mensaje) {
+function setCookie(res, tipo, mensaje) {
     res.cookie(NOMBRE_COOKIE, JSON.stringify({ tipo, mensaje }), OPCIONES_COOKIE);
 }
 

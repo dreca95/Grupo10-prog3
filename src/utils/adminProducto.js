@@ -1,4 +1,4 @@
-export const TIPOS_PRODUCTO = ["accesorio", "alimento"];
+const TIPOS_PRODUCTO = ["accesorio", "alimento"];
 
 export function esValido(tipo) {
     return TIPOS_PRODUCTO.includes(tipo);

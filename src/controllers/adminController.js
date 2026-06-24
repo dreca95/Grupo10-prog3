@@ -90,8 +90,8 @@ const adminController = {
         const { tipo, nombre, descripcion, precioNum } = req.body;
 
         try {
-            const Model = tipo === "accesorio" ? Accesorio : Alimento;
-            const creado = await Model.create({
+            const model = tipo === "accesorio" ? Accesorio : Alimento;
+            const creado = await model.create({
                 nombre,
                 precio: precioNum,
                 descripcion,
@@ -115,8 +115,8 @@ const adminController = {
         const { tipo, id } = req.params;
 
         try {
-            const Model = tipo === "accesorio" ? Accesorio : Alimento;
-            const producto = await Model.findByPk(id);
+            const model = tipo === "accesorio" ? Accesorio : Alimento;
+            const producto = await model.findByPk(id);
 
             //en caso que se modifique a mano el id y sea uno q no existe agrego !producto
             if (!producto || producto.estado === false) {
@@ -140,8 +140,8 @@ const adminController = {
         const producto = { id, nombre, precio: precioNum, descripcion, imagen: null };
 
         try {
-            const ModelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
-            const existente = await ModelOriginal.findByPk(id);
+            const modelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
+            const existente = await modelOriginal.findByPk(id);
 
             //en caso que se modifique a mano el id y sea uno que no existe se agrego !existente
             if (!existente || existente.estado === false) {
@@ -151,8 +151,8 @@ const adminController = {
             producto.imagen = existente.imagen;
 
             if (tipoOriginal !== tipoNuevo) {
-                const ModelNuevo = tipoNuevo === "accesorio" ? Accesorio : Alimento;
-                const nuevo = await ModelNuevo.create({
+                const modelNuevo = tipoNuevo === "accesorio" ? Accesorio : Alimento;
+                const nuevo = await modelNuevo.create({
                     nombre,
                     precio: precioNum,
                     descripcion,
@@ -174,7 +174,7 @@ const adminController = {
                 producto.imagen = imagen;
 
                 eliminarImagenLocal(tipoOriginal, id);
-                await ModelOriginal.destroy({ where: { id } });
+                await modelOriginal.destroy({ where: { id } });
             } else {
                 let imagen = existente.imagen;
 
@@ -182,7 +182,7 @@ const adminController = {
                     imagen = guardarImagenLocal(tipoNuevo, id, req.file);
                 }
 
-                await ModelOriginal.update(
+                await modelOriginal.update(
                     { nombre, precio: precioNum, descripcion, imagen },
                     { where: { id } }
                 );

@@ -59,8 +59,8 @@
     }
 
     async function cargarTicket() {
-      const ventaId = __utils.ObtenerQueryParam("id");
-      const token = __utils.ObtenerQueryParam("token");
+      const ventaId = __utils.obtenerQueryParam("id");
+      const token = __utils.obtenerQueryParam("token");
 
       const cont = document.getElementById("contenido");
       if (!ventaId || !token) {
@@ -86,13 +86,13 @@
 
         summary.appendChild(filaResumen("Empresa", "MASCOTERO", { etiquetaNegrita: true }));
         summary.appendChild(filaResumen("Cliente", v.cliente, { etiquetaNegrita: true }));
-        summary.appendChild(filaResumen("Fecha", __utils.FormatearFechaHoraAR(v.fecha), { etiquetaNegrita: true }));
+        summary.appendChild(filaResumen("Fecha", __utils.formatearFechaHoraAR(v.fecha), { etiquetaNegrita: true }));
         summary.appendChild(filaResumen("Productos", v.descripcion, {
           etiquetaNegrita: true,
           estiloDer: { textAlign: "right", maxWidth: "520px" }
         }));
         summary.appendChild(filaResumen("Cantidad total", String(v.cantidad), { etiquetaNegrita: true }));
-        summary.appendChild(filaResumen("Total", __utils.FormatearNumeroAPrecio(v.precio), { total: true }));
+        summary.appendChild(filaResumen("Total", __utils.formatearNumeroAPrecio(v.precio), { total: true }));
 
         cont.replaceChildren();
         cont.appendChild(summary);

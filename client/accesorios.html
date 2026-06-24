@@ -41,6 +41,10 @@
   <script src="/client/js/cart.js"></script>
   <script src="/client/js/paginado.js"></script>
   <script>
+    if (!__utils.requerirNombreCliente()) {
+      throw new Error("redirect");
+    }
+
     __include("#header", "/client/partials/header.html").then(() => {
       __cart.updateCartBadge();
     });

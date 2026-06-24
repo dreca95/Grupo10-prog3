@@ -27,7 +27,7 @@ function esImagenReal(buffer) {
     return esJpeg(buffer) || esPng(buffer);
 }
 
-export function validarImagen(req, res, next) {
+function validarImagen(req, res, next) {
     if (!req.file) {
         return next();
     }

@@ -27,12 +27,17 @@
   </div>
 
   <script src="/client/js/include.js"></script>
+  <script src="/client/js/utils.js"></script>
   <script src="/client/js/cart.js"></script>
   <script>
+    if (!__utils.requerirNombreCliente()) {
+      throw new Error("redirect");
+    }
+
     __include("#header", "/client/partials/header.html").then(() => {
       __cart.updateCartBadge();
 
-      const nombre = (localStorage.getItem("cliente_nombre") || "").trim();
+      const nombre = __utils.obtenerNombreCliente();
       const el = document.getElementById("bienvenidaTexto");
       if (el && nombre) {
         el.replaceChildren();

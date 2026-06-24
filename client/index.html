@@ -16,7 +16,7 @@
       <h2>Ingresá tu nombre:</h2>
       <form id="bienvenidaForm">
         <label style="display:none;">Ingresá tu nombre:</label><br />
-        <input type="text" id="nombre" name="nombre" required /><br />
+        <input type="text" id="nombre" name="nombre" required maxlength="100" /><br />
         <button type="submit">Entrar</button>
       </form>
     </div>
@@ -30,16 +30,27 @@
     </button>
 
     <script src="/client/js/include.js"></script>
+    <script src="/client/js/utils.js"></script>
     <script src="/client/js/cart.js"></script>
     <script>
       __include("#header", "/client/partials/header.html").then(() => {
         __cart.updateCartBadge();
       });
 
+      const nombreGuardado = __utils.obtenerNombreCliente();
+      const inputNombre = document.getElementById("nombre");
+      if (nombreGuardado) {
+        inputNombre.value = nombreGuardado;
+      }
+
       document.getElementById("bienvenidaForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const nombre = document.getElementById("nombre").value.trim();
         if (!nombre) return;
+        if (nombre.length > 100) {
+          alert("El nombre no puede superar 100 caracteres.");
+          return;
+        }
 
         localStorage.setItem("cliente_nombre", nombre);
         window.location.href = "/client/productos.html";

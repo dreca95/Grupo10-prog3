@@ -70,8 +70,8 @@ function crearPaginadorCatalogo({
     function renderizarCard(prod) {
         const id = Number(prod.id ?? prod.ID ?? prod.Id);
         const nombre = prod.nombre;
-        const precioNumero = __utils.ConvertirTextoMoneyANumero(prod.precio);
-        const precioTexto = __utils.FormatearNumeroAPrecio(prod.precio);
+        const precioNumero = __utils.convertirTextoMoneyANumero(prod.precio);
+        const precioTexto = __utils.formatearNumeroAPrecio(prod.precio);
         const descripcion = prod.descripcion ?? "";
         const cantidad = __cart.getItemQuantity(tipo, id);
 

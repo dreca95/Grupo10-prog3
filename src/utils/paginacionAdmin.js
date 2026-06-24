@@ -1,4 +1,4 @@
-export const CANT_POR_PAGINA = 10;
+const CANT_POR_PAGINA = 10;
 
 export function paginarLista(todos, query, prefijo) {
     const total = todos.length;

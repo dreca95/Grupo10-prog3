@@ -27,6 +27,10 @@
   <script src="/client/js/utils.js"></script>
   <script src="/client/js/cart.js"></script>
   <script>
+    if (!__utils.requerirNombreCliente()) {
+      throw new Error("redirect");
+    }
+
     __include("#header", "/client/partials/header.html").then(() => {
       __cart.updateCartBadge();
     });
@@ -61,7 +65,7 @@
       lblTotal.textContent = "Total";
 
       const valTotal = document.createElement("span");
-      valTotal.textContent = __utils.FormatearNumeroAPrecio(total);
+      valTotal.textContent = __utils.formatearNumeroAPrecio(total);
 
       summaryRow.appendChild(lblTotal);
       summaryRow.appendChild(valTotal);
@@ -133,7 +137,7 @@
 
         const priceFinal = document.createElement("div");
         priceFinal.className = "final";
-        priceFinal.textContent = __utils.FormatearNumeroAPrecio((it.cantidad || 0) * (it.precio || 0));
+        priceFinal.textContent = __utils.formatearNumeroAPrecio((it.cantidad || 0) * (it.precio || 0));
 
         priceWrap.appendChild(priceFinal);
 
@@ -183,7 +187,7 @@
       const ok = confirm("¿Confirmás la compra?");
       if (!ok) return;
 
-      const cliente = (localStorage.getItem("cliente_nombre") || "").trim();
+      const cliente = __utils.obtenerNombreCliente();
       if (!cliente) {
         alert(
           "No se encontró tu nombre (cliente). Volvé a Inicio, ingresalo y luego comprá."

@@ -9,18 +9,12 @@ function modeloPorTipo(tipo) {
 export { modeloPorTipo };
 
 export async function obtenerProductoPorId(tipo, id) {
-    const Model = modeloPorTipo(tipo);
-    return Model.findByPk(id);
-}
-
-export async function obtenerProximoIdProducto(tipo) {
-    const Model = modeloPorTipo(tipo);
-    const maxId = await Model.max("id");
-    return (maxId ?? 0) + 1;
+    const model = modeloPorTipo(tipo);
+    return model.findByPk(id);
 }
 
 export async function productoYaExiste(tipo, nombre, excluirId = null) {
-    const Model = modeloPorTipo(tipo);
+    const model = modeloPorTipo(tipo);
     const where = {
         nombre: { [Op.iLike]: String(nombre).trim() }
     };
@@ -29,6 +23,6 @@ export async function productoYaExiste(tipo, nombre, excluirId = null) {
         where.id = { [Op.ne]: excluirId };
     }
 
-    const producto = await Model.findOne({ where });
+    const producto = await model.findOne({ where });
     return Boolean(producto);
 }

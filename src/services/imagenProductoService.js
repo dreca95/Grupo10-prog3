@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const Carpeta = "public/img/productos";
-export const Extensiones = [".jpg", ".jpeg", ".png"];
+const carpeta = "public/img/productos";
+const extensiones = [".jpg", ".jpeg", ".png"];
 
 function nombreImagen(tipo, id) {
     return `${tipo}-${id}`;
@@ -16,9 +16,9 @@ export function guardarImagenLocal(tipo, id, file) {
     const ext = path.extname(file.originalname).toLowerCase();
     const base = nombreImagen(tipo, id);
 
-    fs.mkdirSync(Carpeta, { recursive: true });
+    fs.mkdirSync(carpeta, { recursive: true });
 
-    fs.writeFileSync(path.join(Carpeta, `${base}${ext}`), file.buffer);
+    fs.writeFileSync(path.join(carpeta, `${base}${ext}`), file.buffer);
 
     return imagenRuta(tipo, id, ext);
 }
@@ -26,9 +26,9 @@ export function guardarImagenLocal(tipo, id, file) {
 export function eliminarImagenLocal(tipo, id) {
     const base = nombreImagen(tipo, id);
 
-    for (let ext of Extensiones) {
+    for (let ext of extensiones) {
         try {
-            fs.unlinkSync(path.join(Carpeta, `${base}${ext}`));
+            fs.unlinkSync(path.join(carpeta, `${base}${ext}`));
         } catch (error) {
            console.log(`No se pudo eliminar la imagen ${base}${ext}`);
         }
@@ -39,11 +39,13 @@ export function copiarImagenProducto(tipoOrigen, idOrigen, tipoDestino, idDestin
     const baseOrigen = nombreImagen(tipoOrigen, idOrigen);
     const baseDestino = nombreImagen(tipoDestino, idDestino);
 
-    for (const ext of Extensiones) {
-        const origen = path.join(Carpeta, `${baseOrigen}${ext}`);
-            fs.copyFileSync(origen, path.join(Carpeta, `${baseDestino}${ext}`));
-            return imagenRuta(tipoDestino, idDestino, ext);
-        }
+    for (const ext of extensiones) {
+        const origen = path.join(carpeta, `${baseOrigen}${ext}`);
+        if (!fs.existsSync(origen)) continue;
+
+        fs.copyFileSync(origen, path.join(carpeta, `${baseDestino}${ext}`));
+        return imagenRuta(tipoDestino, idDestino, ext);
+    }
 
     return null;
 }

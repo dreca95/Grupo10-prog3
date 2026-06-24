@@ -5,27 +5,11 @@ import VentaProductos from "../models/ventaProductos.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
-import crypto from "crypto";
 import { Op } from "sequelize";
 import sequelize from "../config/database.js";
 import { precioANumero } from "../utils/precio.js";
+import { crearTokenTicket, invalidarTicketToken } from "../utils/ticketTokens.js";
 
-
-function parseMoneyToNumber(v) {
-  if (typeof v === "number") return v;
-  if (!v) return 0;
-  // ejemplo: "$10,000.00" o "$9,800.00" o "10000.00"
-  let s = String(v).trim().replace(/\$/g, "");
-  // si tiene coma y punto: asumimos formato US (10,000.00)
-  if (s.includes(",") && s.includes(".")) {
-    s = s.replace(/,/g, "");
-  } else if (s.includes(",") && !s.includes(".")) {
-    // formato ES (10000,50)
-    s = s.replace(/,/g, ".");
-  }
-  const n = Number(s);
-  return Number.isFinite(n) ? n : 0;
-}
 
 const getAccesorios = async (req, res) => {
 
@@ -56,28 +40,8 @@ const getAlimentos = async (req, res) => {
   }
 };
 
-// Token en memoria para que NO se pueda descargar PDF sin haber comprado.
-const ticketTokens = new Map(); // ventaId -> { token, expiresAt }
-
-function createTicketToken(ventaId) {
-  const token = crypto.randomBytes(16).toString("hex");
-  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutos
-  ticketTokens.set(String(ventaId), { token, expiresAt });
-  return token;
-}
-
-function validateTicketToken(ventaId, token) {
-  const entry = ticketTokens.get(String(ventaId));
-  if (!entry) return false;
-  if (Date.now() > entry.expiresAt) {
-    ticketTokens.delete(String(ventaId));
-    return false;
-  }
-  return entry.token === token;
-}
-
 function money(n) {
-  const safe = parseMoneyToNumber(n);
+  const safe = precioANumero(n);
   return safe.toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 }
 
@@ -175,18 +139,7 @@ const crearVenta = async (req, res) => {
   const t = await sequelize.transaction();
 
   try {
-    // Validación básica del request
-    const { cliente, items } = req.body || {};
-    if (!cliente || typeof cliente !== "string" || !cliente.trim()) {
-      await t.rollback();
-      return res.status(400).json({ error: "cliente requerido" });
-    }
-    if (!Array.isArray(items) || items.length === 0) {
-      await t.rollback();
-      return res.status(400).json({ error: "items requerido" });
-    }
-
-    const resuelto = await resolverItemsVenta(items, t);
+    const resuelto = await resolverItemsVenta(req.ventaItems, t);
     if (resuelto.error) {
       await t.rollback();
       return res.status(400).json({ error: resuelto.error });
@@ -204,7 +157,7 @@ const crearVenta = async (req, res) => {
     // Insert cabecera (tabla VENTAS)
     const venta = await Venta.create(
       {
-        cliente: cliente.trim(),
+        cliente: req.ventaCliente,
         descripcion,
         precio: total,
         cantidad: cantidadTotal,
@@ -229,7 +182,7 @@ const crearVenta = async (req, res) => {
     await t.commit();
 
     // Gestión de ticket
-    const token = createTicketToken(venta.id);
+    const token = crearTokenTicket(venta.id);
 
     return res.json({
       ok: true,
@@ -257,15 +210,7 @@ const crearVenta = async (req, res) => {
 // GET /api/ventas/:id?token=...
 const getVenta = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    const token = String(req.query.token || "");
-
-    if (!id) return res.status(400).json({ error: "id inválido" });
-    if (!token || !validateTicketToken(id, token)) {
-      return res.status(403).json({ error: "token inválido o expirado" });
-    }
-
-    const venta = await Venta.findByPk(id);
+    const venta = await Venta.findByPk(req.ventaId);
     if (!venta) return res.status(404).json({ error: "venta no encontrada" });
 
     return res.json({ ok: true, venta });
@@ -276,16 +221,10 @@ const getVenta = async (req, res) => {
 
 // GET /api/ventas/:id/ticket.pdf?token=...
 const descargarTicketPdf = async (req, res) => {
-  const id = Number(req.params.id);
-  const token = String(req.query.token || "");
-
-  if (!id) return res.status(400).send("id inválido");
-  if (!token || !validateTicketToken(id, token)) {
-    return res.status(403).send("token inválido o expirado");
-  }
-
-  const venta = await Venta.findByPk(id);
-  if (!venta) return res.status(404).send("venta no encontrada");
+  try {
+    const id = req.ventaId;
+    const venta = await Venta.findByPk(id);
+    if (!venta) return res.status(404).json({ error: "venta no encontrada" });
 
   const html = `
   <!doctype html>
@@ -323,39 +262,29 @@ const descargarTicketPdf = async (req, res) => {
 
   await browser.close();
 
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename="ticket-${venta.id}.pdf"`
-  );
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="ticket-${venta.id}.pdf"`
+    );
 
-  // invalidar token al usarlo (1 solo uso)
-  ticketTokens.delete(String(id));
+    invalidarTicketToken(id);
 
-  return res.send(pdfBuffer);
+    return res.send(pdfBuffer);
+  } catch (e) {
+    console.error("descargarTicketPdf", e);
+    return res.status(500).json({ error: "No se pudo generar el ticket." });
+  }
 };
 
 
 const crearAdministrador = async (req, res) => {
   try {
-    const { usuario, password } = req.body || {};
-
-    if (!usuario || typeof usuario !== "string" || !usuario.trim()) {
-      return res.status(400).json({ error: "usuario requerido" });
-    }
-    if (!password || typeof password !== "string" || !password.trim()) {
-      return res.status(400).json({ error: "password requerido" });
-    }
-
-    const usuarioTrimeado = usuario.trim();
-    const existe = await Administrador.findOne({ where: { usuario: usuarioTrimeado } });
-    if (existe) {
-      return res.status(409).json({ error: "el usuario ya existe" });
-    } //409 codnflict: recurso duplicado
+    const { usuario, password } = req.body;
 
     const hash = await bcrypt.hash(password, 10);
     const admin = await Administrador.create({
-      usuario: usuarioTrimeado,
+      usuario,
       password: hash
     });
 
