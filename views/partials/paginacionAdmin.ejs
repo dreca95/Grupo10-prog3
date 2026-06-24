@@ -1,26 +1,12 @@
-<%
-  function urlPagina(primera, ultima) {
-    const partes = [
-      "primera" + prefijo + "=" + primera,
-      "ultima" + prefijo + "=" + ultima,
-      "primera" + otroPrefijo + "=" + otraPrimera,
-      "ultima" + otroPrefijo + "=" + otraUltima
-    ];
-    if (buscarAcc) partes.push("buscarAcc=" + encodeURIComponent(buscarAcc));
-    if (buscarAli) partes.push("buscarAli=" + encodeURIComponent(buscarAli));
-    return "/admin/backoffice?" + partes.join("&");
-  }
-%>
-<div class="pagination">
-  <% if (hayAnterior) { %>
-    <a href="<%= urlPagina(antPrimera, antUltima) %>" class="pagBtn">Anterior</a>
-  <% } else { %>
-    <a href="#" class="pagBtn disabled">Anterior</a>
-  <% } %>
-  <span>Página <%= numPagina %></span>
-  <% if (haySiguiente) { %>
-    <a href="<%= urlPagina(sigPrimera, sigUltima) %>" class="pagBtn">Siguiente</a>
-  <% } else { %>
-    <a href="#" class="pagBtn disabled">Siguiente</a>
-  <% } %>
-</div>
+<form method="POST" action="/admin/backoffice/pagina" class="pagination">
+  <input type="hidden" name="pagSeccion" value="<%= prefijo %>" />
+  <% if (buscarAcc) { %>
+    <input type="hidden" name="buscarAcc" value="<%= buscarAcc %>" />
+  <% } %>
+  <% if (buscarAli) { %>
+    <input type="hidden" name="buscarAli" value="<%= buscarAli %>" />
+  <% } %>
+  <button type="submit" name="pagDir" value="ant" class="pagBtn<%= hayAnterior ? '' : ' disabled' %>"<%= hayAnterior ? '' : ' disabled' %>>Anterior</button>
+  <span class="pagInfo">Página <%= numPagina %></span>
+  <button type="submit" name="pagDir" value="sig" class="pagBtn<%= haySiguiente ? '' : ' disabled' %>"<%= haySiguiente ? '' : ' disabled' %>>Siguiente</button>
+</form>

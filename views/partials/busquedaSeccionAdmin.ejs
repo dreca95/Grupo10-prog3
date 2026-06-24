@@ -1,17 +1,6 @@
 <%
-  const ocultos = (typeof otroPrefijo !== "undefined" && otroPrefijo)
-    ? (function () {
-        const partes = [];
-        partes.push("primera" + otroPrefijo + "=" + otraPrimera);
-        partes.push("ultima" + otroPrefijo + "=" + otraUltima);
-        if (otroBuscar) {
-          partes.push("buscar" + otroPrefijo + "=" + encodeURIComponent(otroBuscar));
-        }
-        return partes.map(function (p) {
-          const i = p.indexOf("=");
-          return { name: p.slice(0, i), value: decodeURIComponent(p.slice(i + 1)) };
-        });
-      })()
+  const ocultos = (typeof otroPrefijo !== "undefined" && otroPrefijo && otroBuscar)
+    ? [{ name: "buscar" + otroPrefijo, value: otroBuscar }]
     : [];
   const conFecha = typeof nombreCampoFecha !== "undefined" && nombreCampoFecha;
   const hayBusqueda = valor || (conFecha && valorFecha);
@@ -55,4 +44,3 @@
         <input type="hidden" name="<%= campo.name %>" value="<%= campo.value %>" />
     <% }) %>
 </form>
-

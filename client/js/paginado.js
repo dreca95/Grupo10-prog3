@@ -223,15 +223,10 @@ function crearPaginadorCatalogo({
             const lista = productosFiltrados();
 
             primera -= CANT_POR_PAGINA;
-            ultima -= CANT_POR_PAGINA;
-
             if (primera < 0) {
                 primera = 0;
             }
-
-            if (ultima <= primera) {
-                ultima = Math.min(primera + CANT_POR_PAGINA, lista.length);
-            }
+            ultima = Math.min(primera + CANT_POR_PAGINA, lista.length);
 
             mostrarProductos();
         }

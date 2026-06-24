@@ -1,25 +1,11 @@
-<%
-  function urlPagina(primera, ultima) {
-    let url = "/admin/ventas?primeraVen=" + primera + "&ultimaVen=" + ultima;
-    if (buscarVen) {
-      url += "&buscarVen=" + encodeURIComponent(buscarVen);
-    }
-    if (buscarFechaVen) {
-      url += "&buscarFechaVen=" + encodeURIComponent(buscarFechaVen);
-    }
-    return url;
-  }
-%>
-<div class="pagination">
-  <% if (hayAnterior) { %>
-    <a href="<%= urlPagina(antPrimera, antUltima) %>" class="pagBtn">Anterior</a>
-  <% } else { %>
-    <a href="#" class="pagBtn disabled">Anterior</a>
-  <% } %>
-  <span>Página <%= numPagina %></span>
-  <% if (haySiguiente) { %>
-    <a href="<%= urlPagina(sigPrimera, sigUltima) %>" class="pagBtn">Siguiente</a>
-  <% } else { %>
-    <a href="#" class="pagBtn disabled">Siguiente</a>
-  <% } %>
-</div>
+<form method="POST" action="/admin/ventas/pagina" class="pagination">
+  <% if (buscarVen) { %>
+    <input type="hidden" name="buscarVen" value="<%= buscarVen %>" />
+  <% } %>
+  <% if (buscarFechaVen) { %>
+    <input type="hidden" name="buscarFechaVen" value="<%= buscarFechaVen %>" />
+  <% } %>
+  <button type="submit" name="pagDir" value="ant" class="pagBtn<%= hayAnterior ? '' : ' disabled' %>"<%= hayAnterior ? '' : ' disabled' %>>Anterior</button>
+  <span class="pagInfo">Página <%= numPagina %></span>
+  <button type="submit" name="pagDir" value="sig" class="pagBtn<%= haySiguiente ? '' : ' disabled' %>"<%= haySiguiente ? '' : ' disabled' %>>Siguiente</button>
+</form>

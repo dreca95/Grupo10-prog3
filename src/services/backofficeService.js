@@ -8,7 +8,7 @@ function filtrarPorNombre(items, termino) {
     return items.filter((p) => (p.nombre || "").toLowerCase().includes(t));
 }
 
-export async function obtenerDatosBackoffice(query = {}) {
+export async function obtenerDatosBackoffice(query = {}, paginas = {}) {
     const buscarAcc = String(query.buscarAcc ?? "").trim();
     const buscarAli = String(query.buscarAli ?? "").trim();
 
@@ -25,8 +25,8 @@ export async function obtenerDatosBackoffice(query = {}) {
     const filtradosAcc = filtrarPorNombre(todosAcc, buscarAcc);
     const filtradosAli = filtrarPorNombre(todosAli, buscarAli);
 
-    const acc = paginarLista(filtradosAcc, query, "Acc");
-    const ali = paginarLista(filtradosAli, query, "Ali");
+    const acc = paginarLista(filtradosAcc, paginas.Acc);
+    const ali = paginarLista(filtradosAli, paginas.Ali);
 
     return {
         accesorios: acc.items,

@@ -48,7 +48,7 @@ function filtrarPorFecha(items, fechaBusqueda) {
     return items.filter((vp) => vp.fecha && fecha(vp.fecha) === f);
 }
 
-export async function obtenerDatosVentas(query = {}) {
+export async function obtenerDatosVentas(query = {}, paginas = {}) {
     const buscarVen = String(query.buscarVen ?? "").trim();
     const buscarFechaVen = String(query.buscarFechaVen ?? "").trim();
 
@@ -89,7 +89,7 @@ export async function obtenerDatosVentas(query = {}) {
 
     let filtradas = filtrarVentas(todas, buscarVen);
     filtradas = filtrarPorFecha(filtradas, buscarFechaVen);
-    const pag = paginarLista(filtradas, query, "Ven");
+    const pag = paginarLista(filtradas, paginas.Ven);
 
     return {
         ventaProductos: pag.items,

@@ -400,12 +400,34 @@ button:hover {
 
 .pagination a,
 .pagination .pagBtn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 108px;
+    min-width: 108px;
+    max-width: 108px;
+    flex-shrink: 0;
+    box-sizing: border-box;
     padding: 10px 16px;
+    margin-top: 0;
     background: #2e7d32;
     color: white;
     border-radius: 6px;
     font-weight: bold;
+    text-align: center;
+}
+
+.pagination button.pagBtn {
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    line-height: inherit;
+    transition: none;
+}
+
+.pagination button.pagBtn:disabled {
+    cursor: default;
+    filter: none;
 }
 
 .pagination a:hover,
@@ -414,12 +436,29 @@ button:hover {
 }
 
 .pagination a.disabled,
-.pagination .pagBtn.disabled {
+.pagination .pagBtn.disabled,
+.pagination button.pagBtn:disabled {
     background: #c0c0c0;
     color: #777;
 }
 
+.pagination button.pagBtn:disabled:hover {
+    filter: none;
+    background: #c0c0c0;
+}
+
 .pagination span {
+    font-weight: bold;
+}
+
+.pagination > span:not(.pagBtn) {
+    min-width: 88px;
+    text-align: center;
+}
+
+.pagination .pagInfo {
+    min-width: 88px;
+    text-align: center;
     font-weight: bold;
 }
 

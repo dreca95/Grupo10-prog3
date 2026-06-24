@@ -35,8 +35,8 @@
                         <p>No hay accesorios cargados.</p>
                     <% } else { %>
                         <%
-                            let urlLimpiarAcc = "/admin/backoffice?primeraAli=" + pagAli.primera + "&ultimaAli=" + pagAli.ultima;
-                            if (buscarAli) urlLimpiarAcc += "&buscarAli=" + encodeURIComponent(buscarAli);
+                            let urlLimpiarAcc = "/admin/backoffice";
+                            if (buscarAli) urlLimpiarAcc += "?buscarAli=" + encodeURIComponent(buscarAli);
                         %>
                         <%- include('../partials/busquedaSeccionAdmin', {
                             actionUrl: "/admin/backoffice",
@@ -46,8 +46,6 @@
                             labelText: "Buscar por nombre",
                             placeholder: "Nombre del producto...",
                             otroPrefijo: "Ali",
-                            otraPrimera: pagAli.primera,
-                            otraUltima: pagAli.ultima,
                             otroBuscar: buscarAli,
                             urlLimpiar: urlLimpiarAcc
                         }) %>
@@ -90,18 +88,11 @@
                             </div>
                             <%- include('../partials/paginacionAdmin', {
                                 prefijo: "Acc",
-                                otroPrefijo: "Ali",
-                                otraPrimera: pagAli.primera,
-                                otraUltima: pagAli.ultima,
                                 buscarAcc: buscarAcc,
                                 buscarAli: buscarAli,
                                 hayAnterior: pagAcc.hayAnterior,
                                 haySiguiente: pagAcc.haySiguiente,
-                                numPagina: pagAcc.numPagina,
-                                antPrimera: pagAcc.antPrimera,
-                                antUltima: pagAcc.antUltima,
-                                sigPrimera: pagAcc.sigPrimera,
-                                sigUltima: pagAcc.sigUltima
+                                numPagina: pagAcc.numPagina
                             }) %>
                         <% } %>
                     <% } %>
@@ -113,8 +104,8 @@
                         <p>No hay alimentos cargados.</p>
                     <% } else { %>
                         <%
-                            let urlLimpiarAli = "/admin/backoffice?primeraAcc=" + pagAcc.primera + "&ultimaAcc=" + pagAcc.ultima;
-                            if (buscarAcc) urlLimpiarAli += "&buscarAcc=" + encodeURIComponent(buscarAcc);
+                            let urlLimpiarAli = "/admin/backoffice";
+                            if (buscarAcc) urlLimpiarAli += "?buscarAcc=" + encodeURIComponent(buscarAcc);
                         %>
                         <%- include('../partials/busquedaSeccionAdmin', {
                             actionUrl: "/admin/backoffice",
@@ -124,8 +115,6 @@
                             labelText: "Buscar por nombre",
                             placeholder: "Nombre del producto...",
                             otroPrefijo: "Acc",
-                            otraPrimera: pagAcc.primera,
-                            otraUltima: pagAcc.ultima,
                             otroBuscar: buscarAcc,
                             urlLimpiar: urlLimpiarAli
                         }) %>
@@ -168,18 +157,11 @@
                             </div>
                             <%- include('../partials/paginacionAdmin', {
                                 prefijo: "Ali",
-                                otroPrefijo: "Acc",
-                                otraPrimera: pagAcc.primera,
-                                otraUltima: pagAcc.ultima,
                                 buscarAcc: buscarAcc,
                                 buscarAli: buscarAli,
                                 hayAnterior: pagAli.hayAnterior,
                                 haySiguiente: pagAli.haySiguiente,
-                                numPagina: pagAli.numPagina,
-                                antPrimera: pagAli.antPrimera,
-                                antUltima: pagAli.antUltima,
-                                sigPrimera: pagAli.sigPrimera,
-                                sigUltima: pagAli.sigUltima
+                                numPagina: pagAli.numPagina
                             }) %>
                         <% } %>
                     <% } %>
