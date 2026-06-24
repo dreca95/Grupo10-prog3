@@ -59,6 +59,14 @@ function crearPaginadorCatalogo({
         });
     }
 
+    function mostrarMensajeGrid(texto, className) {
+        grid.replaceChildren();
+        const p = document.createElement("p");
+        if (className) p.className = className;
+        p.textContent = texto;
+        grid.appendChild(p);
+    }
+
     function renderizarCard(prod) {
         const id = Number(prod.id ?? prod.ID ?? prod.Id);
         const nombre = prod.nombre;
@@ -66,28 +74,77 @@ function crearPaginadorCatalogo({
         const precioTexto = __utils.FormatearNumeroAPrecio(prod.precio);
         const descripcion = prod.descripcion ?? "";
         const cantidad = __cart.getItemQuantity(tipo, id);
-        const imagenHtml = prod.imagen
-            ? `<img src="${prod.imagen}" alt="${nombre}" onerror="this.onerror=null;this.src='/client/img/error.png';">`
-            : `<div class="sinImagenProducto">Sin imagen</div>`;
 
         const card = document.createElement("div");
         card.className = "productoCard";
         card.dataset.productoId = id;
-        card.innerHTML = `
-            <div class="productoImagen">${imagenHtml}</div>
-            <div class="productoInfo">
-                <h3>${nombre}</h3>
-                <p><strong>Precio:</strong> ${precioTexto}</p>
-                <p><strong>Descripción:</strong> ${descripcion}</p>
-                <div class="productoActions">
-                    <button type="button" class="productoBtn editarBtn" data-action="add">+</button>
-                    <span class="productoCantidad">${cantidad > 0 ? cantidad : ""}</span>
-                    <button type="button" class="productoBtn eliminarBtn" data-action="remove">-</button>
-                </div>
-            </div>
-        `;
 
-        card.querySelector('[data-action="add"]').addEventListener("click", () => {
+        const imagenWrap = document.createElement("div");
+        imagenWrap.className = "productoImagen";
+        if (prod.imagen) {
+            const img = document.createElement("img");
+            img.src = prod.imagen;
+            img.alt = nombre;
+            img.onerror = function () {
+                this.onerror = null;
+                this.src = "/client/img/error.png";
+            };
+            imagenWrap.appendChild(img);
+        } else {
+            const sin = document.createElement("div");
+            sin.className = "sinImagenProducto";
+            sin.textContent = "Sin imagen";
+            imagenWrap.appendChild(sin);
+        }
+        card.appendChild(imagenWrap);
+
+        const info = document.createElement("div");
+        info.className = "productoInfo";
+
+        const titulo = document.createElement("h3");
+        titulo.textContent = nombre;
+        info.appendChild(titulo);
+
+        const pPrecio = document.createElement("p");
+        const lblPrecio = document.createElement("strong");
+        lblPrecio.textContent = "Precio:";
+        pPrecio.appendChild(lblPrecio);
+        pPrecio.appendChild(document.createTextNode(" " + precioTexto));
+        info.appendChild(pPrecio);
+
+        const pDesc = document.createElement("p");
+        const lblDesc = document.createElement("strong");
+        lblDesc.textContent = "Descripción:";
+        pDesc.appendChild(lblDesc);
+        pDesc.appendChild(document.createTextNode(" " + descripcion));
+        info.appendChild(pDesc);
+
+        const actions = document.createElement("div");
+        actions.className = "productoActions";
+
+        const btnAdd = document.createElement("button");
+        btnAdd.type = "button";
+        btnAdd.className = "productoBtn editarBtn";
+        btnAdd.dataset.action = "add";
+        btnAdd.textContent = "+";
+
+        const spanCant = document.createElement("span");
+        spanCant.className = "productoCantidad";
+        setCantidadVisible(spanCant, cantidad);
+
+        const btnRemove = document.createElement("button");
+        btnRemove.type = "button";
+        btnRemove.className = "productoBtn eliminarBtn";
+        btnRemove.dataset.action = "remove";
+        btnRemove.textContent = "-";
+
+        actions.appendChild(btnAdd);
+        actions.appendChild(spanCant);
+        actions.appendChild(btnRemove);
+        info.appendChild(actions);
+        card.appendChild(info);
+
+        btnAdd.addEventListener("click", () => {
             if (!id) return;
             __cart.addItem({
                 tipo,
@@ -100,7 +157,7 @@ function crearPaginadorCatalogo({
             actualizarCantidadEnCards();
         });
 
-        card.querySelector('[data-action="remove"]').addEventListener("click", () => {
+        btnRemove.addEventListener("click", () => {
             if (!id) return;
             __cart.removeItem(tipo, id);
             actualizarCantidadEnCards();
@@ -110,11 +167,11 @@ function crearPaginadorCatalogo({
     }
 
     function mostrarProductos() {
-        grid.innerHTML = "";
+        grid.replaceChildren();
         sinCoincidencias.hidden = true;
 
         if (!arrayTodos.length) {
-            grid.innerHTML = "<p>No hay productos.</p>";
+            mostrarMensajeGrid("No hay productos.");
             actualizarBotones([]);
             return;
         }
@@ -196,7 +253,7 @@ function crearPaginadorCatalogo({
     }
 
     async function cargarProductos() {
-        grid.innerHTML = "<p>Cargando...</p>";
+        mostrarMensajeGrid("Cargando...");
         sinCoincidencias.hidden = true;
 
         try {
@@ -210,7 +267,7 @@ function crearPaginadorCatalogo({
             reiniciarPagina();
             mostrarProductos();
         } catch (e) {
-            grid.innerHTML = `<p class="error">${e.message}</p>`;
+            mostrarMensajeGrid(e.message, "error");
         }
     }
 

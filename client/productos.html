@@ -35,9 +35,12 @@
       const nombre = (localStorage.getItem("cliente_nombre") || "").trim();
       const el = document.getElementById("bienvenidaTexto");
       if (el && nombre) {
-        el.innerHTML = `Bienvenido, ${nombre}.<br />Elegí una categoría`;
+        el.replaceChildren();
+        el.appendChild(document.createTextNode("Bienvenido, " + nombre + ". "));
+        el.appendChild(document.createElement("br"));
+        el.appendChild(document.createTextNode("Elegí una categoría"));
       } else if (el) {
-        el.innerHTML = "Elegí una categoría";
+        el.textContent = "Elegí una categoría";
       }
     });
   </script>

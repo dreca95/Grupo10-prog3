@@ -33,40 +33,79 @@
       __cart.updateCartBadge();
     });
 
+    function filaResumen(etiqueta, valor, opciones) {
+      const opts = opciones || {};
+      const row = document.createElement("div");
+      row.className = "cartSummaryRow" + (opts.total ? " total" : "");
+
+      const izq = document.createElement("span");
+      if (opts.etiquetaNegrita) {
+        const strong = document.createElement("strong");
+        strong.textContent = etiqueta;
+        izq.appendChild(strong);
+      } else {
+        izq.textContent = etiqueta;
+      }
+
+      const der = document.createElement("span");
+      der.textContent = valor;
+      if (opts.estiloDer) {
+        Object.assign(der.style, opts.estiloDer);
+      }
+
+      row.appendChild(izq);
+      row.appendChild(der);
+      return row;
+    }
+
     async function cargarTicket() {
       const ventaId = __utils.ObtenerQueryParam("id");
       const token = __utils.ObtenerQueryParam("token");
 
       const cont = document.getElementById("contenido");
       if (!ventaId || !token) {
-        cont.innerHTML = "<p class='error'>No se encontró el ticket.</p>";
+        cont.replaceChildren();
+        const p = document.createElement("p");
+        p.className = "error";
+        p.textContent = "No se encontró el ticket.";
+        cont.appendChild(p);
         document.getElementById("btnDescargar").disabled = true;
         return;
       }
 
       try {
-        const res = await fetch(`/api/ventas/${ventaId}`);
+        const res = await fetch(
+          `/api/ventas/${ventaId}?token=${encodeURIComponent(token)}`
+        );
         const data = await res.json();
         if (!res.ok || !data.ok) throw new Error(data.error || "No se pudo cargar la venta");
 
         const v = data.venta;
-        cont.innerHTML = `
-            <div class="cartSummary">
-              <div class="cartSummaryRow"><span><strong>Empresa</strong></span><span>MASCOTERO</span></div>
-              <div class="cartSummaryRow"><span><strong>Cliente</strong></span><span>${v.cliente}</span></div>
-              <div class="cartSummaryRow"><span><strong>Fecha</strong></span><span>${__utils.FormatearFechaHoraAR(v.fecha)}</span></div>
-              <div class="cartSummaryRow"><span><strong>Productos</strong></span><span style="text-align:right; max-width: 520px;">${v.descripcion}</span></div>
-              <div class="cartSummaryRow"><span><strong>Cantidad total</strong></span><span>${v.cantidad}</span></div>
-              <div class="cartSummaryRow total"><span>Total</span><span>${__utils.FormatearNumeroAPrecio(v.precio)}</span></div>
-            </div>
-          `;
+        const summary = document.createElement("div");
+        summary.className = "cartSummary";
+
+        summary.appendChild(filaResumen("Empresa", "MASCOTERO", { etiquetaNegrita: true }));
+        summary.appendChild(filaResumen("Cliente", v.cliente, { etiquetaNegrita: true }));
+        summary.appendChild(filaResumen("Fecha", __utils.FormatearFechaHoraAR(v.fecha), { etiquetaNegrita: true }));
+        summary.appendChild(filaResumen("Productos", v.descripcion, {
+          etiquetaNegrita: true,
+          estiloDer: { textAlign: "right", maxWidth: "520px" }
+        }));
+        summary.appendChild(filaResumen("Cantidad total", String(v.cantidad), { etiquetaNegrita: true }));
+        summary.appendChild(filaResumen("Total", __utils.FormatearNumeroAPrecio(v.precio), { total: true }));
+
+        cont.replaceChildren();
+        cont.appendChild(summary);
 
         document.getElementById("btnDescargar").addEventListener("click", () => {
-          // descarga real desde el servidor (Puppeteer), protegido por token temporal
           window.location.href = `/api/ventas/${ventaId}/ticket.pdf?token=${encodeURIComponent(token)}`;
         });
       } catch (e) {
-        cont.innerHTML = `<p class="error">${e.message}</p>`;
+        cont.replaceChildren();
+        const p = document.createElement("p");
+        p.className = "error";
+        p.textContent = e.message;
+        cont.appendChild(p);
         document.getElementById("btnDescargar").disabled = true;
       }
     }

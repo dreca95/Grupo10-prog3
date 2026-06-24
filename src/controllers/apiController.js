@@ -6,7 +6,9 @@ import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import puppeteer from "puppeteer";
 import crypto from "crypto";
+import { Op } from "sequelize";
 import sequelize from "../config/database.js";
+import { precioANumero } from "../utils/precio.js";
 
 
 function parseMoneyToNumber(v) {
@@ -99,6 +101,75 @@ function formatDateTime(value) {
   )}:${get("second")}`;
 }
 
+async function resolverItemsVenta(items, transaction) {
+  const normalizados = items
+    .map((it) => ({
+      id: Number(it.id) || 0,
+      tipo: String(it.tipo ?? "").trim().toLowerCase(),
+      cantidad: Number(it.cantidad) || 0
+    }))
+    .filter(
+      (it) =>
+        it.id > 0 &&
+        (it.tipo === "accesorio" || it.tipo === "alimento") &&
+        it.cantidad > 0
+    );
+
+  if (!normalizados.length) {
+    return { error: "items inválidos" };
+  }
+
+  const idsAcc = [
+    ...new Set(normalizados.filter((it) => it.tipo === "accesorio").map((it) => it.id))
+  ];
+  const idsAli = [
+    ...new Set(normalizados.filter((it) => it.tipo === "alimento").map((it) => it.id))
+  ];
+
+  const [accesorios, alimentos] = await Promise.all([
+    idsAcc.length
+      ? Accesorio.findAll({
+          where: { id: { [Op.in]: idsAcc }, estado: true },
+          transaction,
+          raw: true
+        })
+      : [],
+    idsAli.length
+      ? Alimento.findAll({
+          where: { id: { [Op.in]: idsAli }, estado: true },
+          transaction,
+          raw: true
+        })
+      : []
+  ]);
+
+  const mapAcc = Object.fromEntries(accesorios.map((a) => [a.id, a]));
+  const mapAli = Object.fromEntries(alimentos.map((a) => [a.id, a]));
+
+  const clean = [];
+  for (const it of normalizados) {
+    const prod = it.tipo === "accesorio" ? mapAcc[it.id] : mapAli[it.id];
+    if (!prod) {
+      return { error: `producto no disponible (${it.tipo} #${it.id})` };
+    }
+
+    const precio = precioANumero(prod.precio);
+    if (precio <= 0) {
+      return { error: `precio inválido para ${prod.nombre}` };
+    }
+
+    clean.push({
+      id: it.id,
+      tipo: it.tipo,
+      nombre: prod.nombre,
+      precio,
+      cantidad: it.cantidad
+    });
+  }
+
+  return { clean };
+}
+
 // POST /api/ventas (guarda cabecera en VENTAS + detalle en VENTA_PRODUCTOS)
 const crearVenta = async (req, res) => {
   const t = await sequelize.transaction();
@@ -115,27 +186,13 @@ const crearVenta = async (req, res) => {
       return res.status(400).json({ error: "items requerido" });
     }
 
-    // Normalización + validación mínima para poder armar las FKs del detalle
-    const clean = items
-      .map((it) => ({
-        id: Number(it.id) || 0,
-        tipo: String(it.tipo ?? "").trim().toLowerCase(),
-        nombre: String(it.nombre ?? "").trim(),
-        precio: Number(it.precio) || 0,
-        cantidad: Number(it.cantidad) || 0
-      }))
-      .filter(
-        (it) =>
-          it.id > 0 &&
-          (it.tipo === "accesorio" || it.tipo === "alimento") &&
-          it.cantidad > 0 &&
-          it.precio >= 0
-      );
-
-    if (!clean.length) {
+    const resuelto = await resolverItemsVenta(items, t);
+    if (resuelto.error) {
       await t.rollback();
-      return res.status(400).json({ error: "items inválidos" });
+      return res.status(400).json({ error: resuelto.error });
     }
+
+    const clean = resuelto.clean;
 
     // Calcular totales para la cabecera (tabla VENTAS)
     const cantidadTotal = clean.reduce((a, it) => a + it.cantidad, 0);
@@ -197,11 +254,16 @@ const crearVenta = async (req, res) => {
 };
 
 
-// GET /api/ventas/:id
+// GET /api/ventas/:id?token=...
 const getVenta = async (req, res) => {
   try {
     const id = Number(req.params.id);
+    const token = String(req.query.token || "");
+
     if (!id) return res.status(400).json({ error: "id inválido" });
+    if (!token || !validateTicketToken(id, token)) {
+      return res.status(403).json({ error: "token inválido o expirado" });
+    }
 
     const venta = await Venta.findByPk(id);
     if (!venta) return res.status(404).json({ error: "venta no encontrada" });

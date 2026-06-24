@@ -36,6 +36,17 @@ export async function verificarAdmin(req, res, next) {
     next();
 }
 
+export async function verificarAdminApi(req, res, next) {
+    const payload = await sesionAdminValida(req, res);
+
+    if (!payload) {
+        return res.status(401).json({ error: "no autorizado" });
+    }
+
+    req.admin = payload;
+    next();
+}
+
 export async function redirigirSiAdminLogueado(req, res, next) {
     const payload = await sesionAdminValida(req, res);
 
