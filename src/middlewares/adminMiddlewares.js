@@ -25,6 +25,103 @@ async function sesionAdminValida(req, res) {
     return payload;
 }
 
+function responderErrorApi(res, status, error) {
+    return res.status(status).json({ error });
+}
+
+export function validarTipoIdParamsApi(req, res, next) {
+    const { tipo, id } = req.params;
+    const idNum = Number(id);
+
+    if (!esValido(tipo) || !Number.isInteger(idNum) || idNum <= 0) {
+        return responderErrorApi(res, 400, "Parámetros inválidos.");
+    }
+
+    next();
+}
+
+export function validarProductoApi(req, res, next) {
+    const { tipo, nombre, precio, descripcion } = req.body;
+    const nombreTrim = String(nombre ?? "").trim();
+    const descripcionTrim = String(descripcion ?? "").trim();
+
+    if (!esValido(tipo)) {
+        return responderErrorApi(res, 400, "Tipo de producto inválido.");
+    }
+
+    if (!nombreTrim) {
+        return responderErrorApi(res, 400, "El nombre debe ser ingresado.");
+    }
+
+    if (!descripcionTrim) {
+        return responderErrorApi(res, 400, "La descripción debe ser ingresada.");
+    }
+
+    const precioNum = parsePrecio(precio);
+    if (precioNum === null) {
+        return responderErrorApi(res, 400, "El precio debe ser mayor a $0.");
+    }
+
+    req.body.nombre = nombreTrim;
+    req.body.descripcion = descripcionTrim;
+    req.body.precioNum = precioNum;
+    next();
+}
+
+export async function validarProductoDuplicadoApi(req, res, next) {
+    try {
+        const { tipo, nombre } = req.body;
+        const tipoOriginal = req.params.tipo;
+        const id = req.params.id;
+
+        const excluirId = id != null && tipoOriginal === tipo ? Number(id) : null;
+
+        if (await productoYaExiste(tipo, nombre, excluirId)) {
+            return responderErrorApi(res, 409, "El producto ya está guardado.");
+        }
+
+        next();
+    } catch (err) {
+        return responderErrorApi(res, 500, "No se pudo validar el producto.");
+    }
+}
+
+export async function validarProductoParaBajaApi(req, res, next) {
+    try {
+        const { tipo, id } = req.params;
+        const producto = await obtenerProductoPorId(tipo, id);
+
+        if (!producto || producto.estado === false) {
+            return responderErrorApi(res, 404, "No se pudo dar de baja el producto.");
+        }
+
+        req.producto = producto;
+        req.productoModel = modeloPorTipo(tipo);
+        next();
+    } catch (err) {
+        console.error("Error al validar baja de producto:", err);
+        return responderErrorApi(res, 500, "No se pudo dar de baja el producto.");
+    }
+}
+
+export async function validarProductoParaActivarApi(req, res, next) {
+    try {
+        const { tipo, id } = req.params;
+        const producto = await obtenerProductoPorId(tipo, id);
+
+        if (!producto || producto.estado !== false) {
+            return responderErrorApi(res, 404, "No se pudo activar el producto.");
+        }
+
+        req.producto = producto;
+        req.productoModel = modeloPorTipo(tipo);
+        next();
+    } catch (err) {
+        console.error("Error al validar activación de producto:", err);
+        return responderErrorApi(res, 500, "No se pudo activar el producto.");
+    }
+}
+
 export async function verificarAdmin(req, res, next) {
     const payload = await sesionAdminValida(req, res);
 

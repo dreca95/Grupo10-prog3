@@ -45,6 +45,38 @@ function validarImagen(req, res, next) {
     next();
 }
 
+function validarImagenApi(req, res, next) {
+    if (!req.file) {
+        return next();
+    }
+
+    const ext = path.extname(req.file.originalname).toLowerCase();
+
+    if (!EXTENSIONES.includes(ext)) {
+        return res.status(400).json({ error: "Solo imagenes JPG, JPEG o PNG." });
+    }
+
+    if (!req.file.buffer || !esImagenReal(req.file.buffer)) {
+        return res.status(400).json({ error: "El archivo no es una imagen JPG o PNG valida." });
+    }
+
+    next();
+}
+
+export function subirImagenProductoApi(req, res, next) {
+    upload.single("imagen")(req, res, (err) => {
+        if (err) {
+            if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+                return res.status(400).json({ error: "La imagen no debe superar 10 MB." });
+            }
+
+            return res.status(500).json({ error: err.message || "ERROR AL SUBIR LA IMAGEN." });
+        }
+
+        validarImagenApi(req, res, next);
+    });
+}
+
 export function subirImagenProducto(req, res, next) {
     upload.single("imagen")(req, res, (err) => {
         if (err) {

@@ -1,11 +1,8 @@
-import Alimento from "../models/alimentos.js";
-import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
 import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 import { generarJWT, guardarToken, borrarToken } from "../utils/jwt.js";
-import { precioANumero } from "../utils/precio.js";
-import { copiarImagenProducto, eliminarImagenLocal, guardarImagenLocal } from "../services/imagenProductoService.js";
+import { activarProducto,crearProducto,darBajaProducto,editarProducto,obtenerProductoBackoffice} from "../services/backofficeService.js";
 
 const adminController = {
 
@@ -67,18 +64,13 @@ const adminController = {
         const { tipo, nombre, descripcion, precioNum } = req.body;
 
         try {
-            const model = tipo === "accesorio" ? Accesorio : Alimento;
-            const creado = await model.create({
+            await crearProducto({
+                tipo,
                 nombre,
-                precio: precioNum,
                 descripcion,
-                estado: true
+                precio: precioNum,
+                file: req.file
             });
-
-            if (req.file) {
-                const imagen = guardarImagenLocal(tipo, creado.id, req.file);
-                await creado.update({ imagen });
-            }
 
             return redirigirBackoffice(res, "exito", `Producto ${nombre} agregado exitosamente`);
         } catch (err) {
@@ -92,79 +84,38 @@ const adminController = {
         const { tipo, id } = req.params;
 
         try {
-            const model = tipo === "accesorio" ? Accesorio : Alimento;
-            const producto = await model.findByPk(id);
+            const producto = await obtenerProductoBackoffice(tipo, id);
 
-            //en caso que se modifique a mano el id y sea uno q no existe agrego !producto
-            if (!producto || producto.estado === false) {
+            if (!producto) {
                 return redirigirBackoffice(res, "error", "No se pudo editar");
             }
 
-            const data = producto.toJSON();
-            data.precio = precioANumero(data.precio);
-
-            return res.render("admin/edicion", { producto: data, tipo });
+            return res.render("admin/edicion", { producto, tipo });
         } catch (err) {
             console.error("Error en edición:", err);
             return redirigirBackoffice(res, "error", "No se pudo editar.");
         }
     },
 
- 
+
     edicionPost: async (req, res) => {
         const { tipo: tipoOriginal, id } = req.params;
         const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
         const producto = { id, nombre, precio: precioNum, descripcion, imagen: null };
 
         try {
-            const modelOriginal = tipoOriginal === "accesorio" ? Accesorio : Alimento;
-            const existente = await modelOriginal.findByPk(id);
+            const editado = await editarProducto({
+                tipoOriginal,
+                id,
+                tipoNuevo,
+                nombre,
+                descripcion,
+                precio: precioNum,
+                file: req.file
+            });
 
-            //en caso que se modifique a mano el id y sea uno que no existe se agrego !existente
-            if (!existente || existente.estado === false) {
+            if (!editado) {
                 return redirigirBackoffice(res, "error", "No se pudo editar el producto.");
-            }
-
-            producto.imagen = existente.imagen;
-
-            if (tipoOriginal !== tipoNuevo) {
-                const modelNuevo = tipoNuevo === "accesorio" ? Accesorio : Alimento;
-                const nuevo = await modelNuevo.create({
-                    nombre,
-                    precio: precioNum,
-                    descripcion,
-                    estado: existente.estado
-                });
-
-                let imagen = null;
-
-                if (req.file) {
-                    imagen = guardarImagenLocal(tipoNuevo, nuevo.id, req.file);
-                } else if (existente.imagen) {
-                    imagen = copiarImagenProducto(tipoOriginal, id, tipoNuevo, nuevo.id);
-                }
-
-                if (imagen) {
-                    await nuevo.update({ imagen });
-                }
-
-                producto.imagen = imagen;
-
-                eliminarImagenLocal(tipoOriginal, id);
-                await modelOriginal.destroy({ where: { id } });
-            } else {
-                let imagen = existente.imagen;
-
-                if (req.file) {
-                    imagen = guardarImagenLocal(tipoNuevo, id, req.file);
-                }
-
-                await modelOriginal.update(
-                    { nombre, precio: precioNum, descripcion, imagen },
-                    { where: { id } }
-                );
-
-                producto.imagen = imagen;
             }
 
             return redirigirBackoffice(res, "exito", `Producto "${nombre}" editado con éxito`);
@@ -178,13 +129,13 @@ const adminController = {
         }
     },
 
- 
+
     bajaPost: async (req, res) => {
-        const { id } = req.params;
-        const { producto, productoModel } = req;
+        const { tipo, id } = req.params;
+        const { producto } = req;
 
         try {
-            await productoModel.update({ estado: false }, { where: { id } });
+            await darBajaProducto(tipo, id);
             return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" eliminado con éxito`);
         } catch (err) {
             return redirigirBackoffice(res, "error", "No se pudo dar de baja el producto");
@@ -192,11 +143,11 @@ const adminController = {
     },
 
     activarPost: async (req, res) => {
-        const { id } = req.params;
-        const { producto, productoModel } = req;
+        const { tipo, id } = req.params;
+        const { producto } = req;
 
         try {
-            await productoModel.update({ estado: true }, { where: { id } });
+            await activarProducto(tipo, id);
             return redirigirBackoffice(res, "exito", `Producto "${producto.nombre}" activado con éxito`);
         } catch (err) {
             return redirigirBackoffice(res, "error", "No se pudo activar el producto");

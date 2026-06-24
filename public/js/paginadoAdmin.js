@@ -260,10 +260,16 @@ function crearPaginadorVentasAdmin({
         return Boolean((terminoBusqueda || "").trim() || (terminoFecha || "").trim());
     }
 
-    function convertirAFilas(ventas) {
+    function filasDesdeItems(items) {
+        if (!items.length) return [];
+
+        if (items[0].id_venta != null && !Array.isArray(items[0].productos)) {
+            return items;
+        }
+
         const filas = [];
 
-        ventas.forEach((venta) => {
+        items.forEach((venta) => {
             const productos = Array.isArray(venta.productos) ? venta.productos : [];
 
             if (!productos.length) {
@@ -343,7 +349,7 @@ function crearPaginadorVentasAdmin({
                 return;
             }
 
-            const filas = convertirAFilas(items);
+            const filas = filasDesdeItems(items);
 
             if (!filas.length) {
                 if (hayBusquedaActiva()) {

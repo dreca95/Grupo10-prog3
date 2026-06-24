@@ -31,7 +31,6 @@
     "multer": "^2.2.0",
     "pg": "^8.21.0",
     "pg-hstore": "^2.3.4",
-    "pupeteer": "^0.0.1",
     "puppeteer": "^25.1.0",
     "sequelize": "^6.37.8"
   },

@@ -1,6 +1,6 @@
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
-import { listarProductosBackoffice } from "../services/backofficeService.js";
+import {listarProductosBackoffice,activarProducto,crearProducto,darBajaProducto,editarProducto,obtenerProductoBackoffice} from "../services/backofficeService.js";
 import { listarVentasBackoffice, listarVentaProductosBackoffice, obtenerVentaConDetalle } from "../services/ventasService.js";
 import {armarPaginado,LIMITE_POR_DEFECTO_ADMIN,normalizarBusqueda,parsearConsultaPaginacion} from "../utils/paginacion.js";
 
@@ -130,10 +130,121 @@ const obtenerVentaPorId = async (req, res) => {
     }
 };
 
+const crearProductoApi = async (req, res) => {
+    const { tipo, nombre, descripcion, precioNum } = req.body;
+
+    try {
+        const producto = await crearProducto({
+            tipo,
+            nombre,
+            descripcion,
+            precio: precioNum,
+            file: req.file
+        });
+
+        return res.status(201).json({ ok: true, producto });
+    } catch (e) {
+        return res.status(500).json({
+            error: "error al crear producto",
+            details: e.message
+        });
+    }
+};
+
+const obtenerProductoApi = async (req, res) => {
+    const { tipo, id } = req.params;
+
+    try {
+        const producto = await obtenerProductoBackoffice(tipo, id);
+
+        if (!producto) {
+            return res.status(404).json({ error: "producto no encontrado" });
+        }
+
+        return res.json({ ok: true, producto });
+    } catch (e) {
+        return res.status(500).json({
+            error: "error al obtener producto",
+            details: e.message
+        });
+    }
+};
+
+const editarProductoApi = async (req, res) => {
+    const { tipo: tipoOriginal, id } = req.params;
+    const { tipo: tipoNuevo, nombre, descripcion, precioNum } = req.body;
+
+    try {
+        const producto = await editarProducto({
+            tipoOriginal,
+            id,
+            tipoNuevo,
+            nombre,
+            descripcion,
+            precio: precioNum,
+            file: req.file
+        });
+
+        if (!producto) {
+            return res.status(404).json({ error: "No se pudo editar el producto." });
+        }
+
+        return res.json({ ok: true, producto });
+    } catch (e) {
+        return res.status(500).json({
+            error: "error al editar producto",
+            details: e.message
+        });
+    }
+};
+
+const darBajaProductoApi = async (req, res) => {
+    const { tipo, id } = req.params;
+
+    try {
+        const producto = await darBajaProducto(tipo, id);
+
+        if (!producto) {
+            return res.status(404).json({ error: "No se pudo dar de baja el producto." });
+        }
+
+        return res.json({ ok: true, producto });
+    } catch (e) {
+        return res.status(500).json({
+            error: "error al dar de baja producto",
+            details: e.message
+        });
+    }
+};
+
+const activarProductoApi = async (req, res) => {
+    const { tipo, id } = req.params;
+
+    try {
+        const producto = await activarProducto(tipo, id);
+
+        if (!producto) {
+            return res.status(404).json({ error: "No se pudo activar el producto." });
+        }
+
+        return res.json({ ok: true, producto });
+    } catch (e) {
+        return res.status(500).json({
+            error: "error al activar producto",
+            details: e.message
+        });
+    }
+};
+
 export default {
     obtenerAccesorios,
     obtenerAlimentos,
     obtenerVentaProductos,
     obtenerVentas,
-    obtenerVentaPorId
+    obtenerVentaPorId,
+    crearProductoApi,
+    obtenerProductoApi,
+    editarProductoApi,
+    darBajaProductoApi,
+    activarProductoApi
 };
