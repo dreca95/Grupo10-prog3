@@ -9,49 +9,22 @@ import { Op } from "sequelize";
 import sequelize from "../config/database.js";
 import { precioANumero } from "../utils/precio.js";
 import { crearTokenTicket, invalidarTicketToken } from "../utils/ticketTokens.js";
-
-
-function parsePositiveInt(value, fallback) {
-  const n = Number(value);
-  return Number.isInteger(n) && n > 0 ? n : fallback;
-}
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
-}
-
-function buildPaginado({ page, limit, total }) {
-  const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
-
-  return {
-    page,
-    limit,
-    total,
-    totalPages,
-    hasPrev: page > 1 && totalPages > 0,
-    hasNext: page < totalPages
-  };
-}
-
-function normalizarBusqueda(value) {
-  const q = String(value ?? "").trim();
-  return q.length ? q : "";
-}
+import {
+  construirPaginado,
+  LIMITE_POR_DEFECTO_CATALOGO,
+  normalizarBusqueda,
+  parsearConsultaPaginacion
+} from "../utils/paginacion.js";
 
 // Se obtienen productos paginados desde al API
 async function paginarProductos({ Model, req, res, errorTag }) {
-  const page = parsePositiveInt(req.query.page, 1);
-  const limitRaw = parsePositiveInt(req.query.limit, 12);
-  const limit = clamp(limitRaw, 1, 50);
-
+  const { page, limit, offset } = parsearConsultaPaginacion(req.query, LIMITE_POR_DEFECTO_CATALOGO);
   const q = normalizarBusqueda(req.query.q);
 
   const where = { estado: true };
   if (q) {
     where.nombre = { [Op.iLike]: `%${q}%` };
   }
-
-  const offset = (page - 1) * limit;
 
   try {
     const result = await Model.findAndCountAll({
@@ -65,7 +38,7 @@ async function paginarProductos({ Model, req, res, errorTag }) {
     return res.json({
       ok: true,
       items: result.rows,
-      paginado: buildPaginado({ page, limit, total: result.count }),
+      paginado: construirPaginado({ page, limit, total: result.count }),
       q
     });
   } catch (e) {

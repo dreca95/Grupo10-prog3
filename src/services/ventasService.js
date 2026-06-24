@@ -1,17 +1,19 @@
 import { Op } from "sequelize";
+import sequelize from "../config/database.js";
+import "../models/associations.js";
 import VentaProductos from "../models/ventaProductos.js";
 import Venta from "../models/ventas.js";
 import Accesorio from "../models/accesorios.js";
 import Alimento from "../models/alimentos.js";
 import { formatearPrecio } from "../utils/precio.js";
-import { paginarLista } from "../utils/paginacionAdmin.js";
+import { normalizarBusqueda } from "../utils/paginacion.js";
 
-function nombreProducto(vp, mapAcc, mapAli) {
-    if (vp.id_accesorio) {
-        return mapAcc[vp.id_accesorio] ?? "-";
+function nombreProducto(vp) {
+    if (vp.accesorio) {
+        return vp.accesorio.nombre ?? "-";
     }
-    if (vp.id_alimento) {
-        return mapAli[vp.id_alimento] ?? "-";
+    if (vp.alimento) {
+        return vp.alimento.nombre ?? "-";
     }
     return "-";
 }
@@ -23,78 +25,84 @@ function formatearFecha(fecha) {
     });
 }
 
-function filtrarVentas(items, termino) {
-    const t = String(termino || "").trim();
-    if (!t) return items;
-
-    const tl = t.toLowerCase();
-    return items.filter(
-        (vp) =>
-            String(vp.id).includes(t) ||
-            (vp.descripcion || "").toLowerCase().includes(tl)
-    );
-}
-
-function fecha(valor) {
-    return new Date(valor).toLocaleDateString("en-CA", {
-        timeZone: "America/Argentina/Buenos_Aires"
-    });
-}
-
-function filtrarPorFecha(items, fechaBusqueda) {
-    const f = String(fechaBusqueda || "").trim();
-    if (!f) return items;
-
-    return items.filter((vp) => vp.fecha && fecha(vp.fecha) === f);
-}
-
-export async function obtenerDatosVentas(query = {}, paginas = {}) {
-    const buscarVen = String(query.buscarVen ?? "").trim();
-    const buscarFechaVen = String(query.buscarFechaVen ?? "").trim();
-
-    const rows = await VentaProductos.findAll({
-        order: [["id", "DESC"]],
-        raw: true
-    });
-
-    const idsAcc = [...new Set(rows.filter((r) => r.id_accesorio).map((r) => r.id_accesorio))];
-    const idsAli = [...new Set(rows.filter((r) => r.id_alimento).map((r) => r.id_alimento))];
-
-    const idsVenta = [...new Set(rows.map((r) => r.id_venta))];
-
-    const [accesorios, alimentos, ventas] = await Promise.all([
-        idsAcc.length
-            ? Accesorio.findAll({ where: { id: { [Op.in]: idsAcc } }, attributes: ["id", "nombre"], raw: true })
-            : [],
-        idsAli.length
-            ? Alimento.findAll({ where: { id: { [Op.in]: idsAli } }, attributes: ["id", "nombre"], raw: true })
-            : [],
-        idsVenta.length
-            ? Venta.findAll({ where: { id: { [Op.in]: idsVenta } }, attributes: ["id", "fecha"], raw: true })
-            : []
-    ]);
-
-    const mapAcc = Object.fromEntries(accesorios.map((a) => [a.id, a.nombre]));
-    const mapAli = Object.fromEntries(alimentos.map((a) => [a.id, a.nombre]));
-    const mapFecha = Object.fromEntries(ventas.map((v) => [v.id, v.fecha]));
-
-    const todas = rows.map((vp) => ({
-        ...vp,
-        descripcion: nombreProducto(vp, mapAcc, mapAli),
-        fecha: mapFecha[vp.id_venta] ?? null,
-        fechaFormateada: formatearFecha(mapFecha[vp.id_venta]),
-        precioUnitarioFormateado: formatearPrecio(vp.precio_unitario),
-        precioFormateado: formatearPrecio(vp.precio_total)
-    }));
-
-    let filtradas = filtrarVentas(todas, buscarVen);
-    filtradas = filtrarPorFecha(filtradas, buscarFechaVen);
-    const pag = paginarLista(filtradas, paginas.Ven);
+function construirFiltroVentas(q) {
+    const termino = normalizarBusqueda(q);
+    if (!termino) return {};
 
     return {
-        ventaProductos: pag.items,
-        pagVen: { ...pag, totalInventario: todas.length },
-        buscarVen,
-        buscarFechaVen
+        [Op.or]: [
+            sequelize.where(
+                sequelize.cast(sequelize.col("VENTA_PRODUCTOS.id"), "varchar"),
+                { [Op.iLike]: `%${termino}%` }
+            ),
+            { "$accesorio.nombre$": { [Op.iLike]: `%${termino}%` } },
+            { "$alimento.nombre$": { [Op.iLike]: `%${termino}%` } }
+        ]
+    };
+}
+
+function construirIncludeVenta(fechaBusqueda) {
+    const fecha = normalizarBusqueda(fechaBusqueda);
+    const ventaInclude = {
+        model: Venta,
+        as: "venta",
+        attributes: ["id", "fecha"],
+        required: true
+    };
+
+    if (fecha) {
+        ventaInclude.where = sequelize.where(
+            sequelize.fn(
+                "TO_CHAR",
+                sequelize.fn("timezone", "America/Argentina/Buenos_Aires", sequelize.col("venta.fecha")),
+                "YYYY-MM-DD"
+            ),
+            fecha
+        );
+    }
+
+    return [
+        ventaInclude,
+        { model: Accesorio, as: "accesorio", attributes: ["id", "nombre"], required: false },
+        { model: Alimento, as: "alimento", attributes: ["id", "nombre"], required: false }
+    ];
+}
+
+export async function listarVentaProductosBackoffice({ page, limit, offset, q, fecha }) {
+    const [result, totalInventario] = await Promise.all([
+        VentaProductos.findAndCountAll({
+            include: construirIncludeVenta(fecha),
+            where: construirFiltroVentas(q),
+            order: [["id", "DESC"]],
+            limit,
+            offset,
+            distinct: true,
+            col: "id"
+        }),
+        VentaProductos.count()
+    ]);
+
+    const items = result.rows.map((row) => {
+        const vp = row.get({ plain: true });
+        return {
+            id: vp.id,
+            id_venta: vp.id_venta,
+            id_accesorio: vp.id_accesorio,
+            id_alimento: vp.id_alimento,
+            cantidad: vp.cantidad,
+            precio_unitario: vp.precio_unitario,
+            precio_total: vp.precio_total,
+            descripcion: nombreProducto(vp),
+            fecha: vp.venta?.fecha ?? null,
+            fechaFormateada: formatearFecha(vp.venta?.fecha),
+            precioUnitarioFormateado: formatearPrecio(vp.precio_unitario),
+            precioFormateado: formatearPrecio(vp.precio_total)
+        };
+    });
+
+    return {
+        items,
+        total: result.count,
+        totalInventario
     };
 }

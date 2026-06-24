@@ -1,39 +1,29 @@
-import Alimento from "../models/alimentos.js";
-import Accesorio from "../models/accesorios.js";
-import { paginarLista } from "../utils/paginacionAdmin.js";
+import { Op } from "sequelize";
+import { normalizarBusqueda } from "../utils/paginacion.js";
 
-function filtrarPorNombre(items, termino) {
-    const t = String(termino || "").trim().toLowerCase();
-    if (!t) return items;
-    return items.filter((p) => (p.nombre || "").toLowerCase().includes(t));
-}
+export async function listarProductosBackoffice({ Model, page, limit, offset, q }) {
+    const busqueda = normalizarBusqueda(q);
+    const where = {};
 
-export async function obtenerDatosBackoffice(query = {}, paginas = {}) {
-    const buscarAcc = String(query.buscarAcc ?? "").trim();
-    const buscarAli = String(query.buscarAli ?? "").trim();
+    if (busqueda) {
+        where.nombre = { [Op.iLike]: `%${busqueda}%` };
+    }
 
-    const todosAcc = await Accesorio.findAll({
-        attributes: ["id", "nombre", "precio", "descripcion", "estado", "imagen"],
-        order: [["nombre", "ASC"]]
-    });
-
-    const todosAli = await Alimento.findAll({
-        attributes: ["id", "nombre", "precio", "descripcion", "estado", "imagen"],
-        order: [["nombre", "ASC"]]
-    });
-
-    const filtradosAcc = filtrarPorNombre(todosAcc, buscarAcc);
-    const filtradosAli = filtrarPorNombre(todosAli, buscarAli);
-
-    const acc = paginarLista(filtradosAcc, paginas.Acc);
-    const ali = paginarLista(filtradosAli, paginas.Ali);
+    const [result, totalInventario] = await Promise.all([
+        Model.findAndCountAll({
+            attributes: ["id", "nombre", "precio", "descripcion", "estado", "imagen"],
+            where,
+            order: [["nombre", "ASC"]],
+            limit,
+            offset,
+            raw: true
+        }),
+        Model.count()
+    ]);
 
     return {
-        accesorios: acc.items,
-        alimentos: ali.items,
-        pagAcc: { ...acc, totalInventario: todosAcc.length },
-        pagAli: { ...ali, totalInventario: todosAli.length },
-        buscarAcc,
-        buscarAli
+        items: result.rows,
+        total: result.count,
+        totalInventario
     };
 }

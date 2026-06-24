@@ -2,11 +2,9 @@ import Alimento from "../models/alimentos.js";
 import Accesorio from "../models/accesorios.js";
 import Administrador from "../models/administradores.js";
 import bcrypt from "bcrypt";
-import { leerCookie, redirigirBackoffice, leerPaginas, guardarPaginas, borrarPaginas, moverPagina, sincronizarBusqueda } from "../utils/cookies.js";
+import { leerCookie, redirigirBackoffice } from "../utils/cookies.js";
 import { generarJWT, guardarToken, borrarToken } from "../utils/jwt.js";
 import { precioANumero } from "../utils/precio.js";
-import { obtenerDatosBackoffice } from "../services/backofficeService.js";
-import { obtenerDatosVentas } from "../services/ventasService.js";
 import { copiarImagenProducto, eliminarImagenLocal, guardarImagenLocal } from "../services/imagenProductoService.js";
 
 const adminController = {
@@ -46,7 +44,6 @@ const adminController = {
 
     logoutPost: (req, res) => {
         borrarToken(res);
-        borrarPaginas(res);
         return res.redirect("/admin/login");
     },
 
@@ -56,103 +53,13 @@ const adminController = {
     },
 
 
-    backofficeGet: async (req, res) => {
-        try {
-            const paginas = leerPaginas(req);
-            sincronizarBusqueda(paginas, "buscarAcc", req.query.buscarAcc, "Acc");
-            sincronizarBusqueda(paginas, "buscarAli", req.query.buscarAli, "Ali");
-            guardarPaginas(res, paginas);
-
-            const datos = await obtenerDatosBackoffice(req.query, paginas);
-            paginas.Acc = datos.pagAcc.numPagina || 1;
-            paginas.Ali = datos.pagAli.numPagina || 1;
-            guardarPaginas(res, paginas);
-            const cookie = leerCookie(req, res);
-
-            return res.render("admin/indexBackoffice", {
-                accesorios: datos.accesorios,
-                alimentos: datos.alimentos,
-                pagAcc: datos.pagAcc,
-                pagAli: datos.pagAli,
-                buscarAcc: datos.buscarAcc,
-                buscarAli: datos.buscarAli,
-                cookie
-            });
-        } catch (err) {
-            console.error("Error en backoffice:", err);
-
-            const pagVacio = {
-                totalInventario: 0,
-                total: 0,
-                numPagina: 0,
-                hayAnterior: false,
-                haySiguiente: false
-            };
-
-            return res.render("admin/indexBackoffice", {
-                accesorios: [],
-                alimentos: [],
-                pagAcc: pagVacio,
-                pagAli: pagVacio,
-                buscarAcc: "",
-                buscarAli: "",
-                cookie: { tipo: "error", mensaje: "No se pudo cargar el backoffice" }
-            });
-        }
+    backofficeGet: (req, res) => {
+        const cookie = leerCookie(req, res);
+        return res.render("admin/indexBackoffice", { cookie });
     },
 
-    backofficePaginaPost: (req, res) => {
-        const { pagSeccion, pagDir, buscarAcc, buscarAli } = req.body;
-
-        if ((pagSeccion === "Acc" || pagSeccion === "Ali") && (pagDir === "sig" || pagDir === "ant")) {
-            const paginas = leerPaginas(req);
-            moverPagina(paginas, pagSeccion, pagDir);
-            guardarPaginas(res, paginas);
-        }
-
-        const params = new URLSearchParams();
-        if (buscarAcc) params.set("buscarAcc", buscarAcc);
-        if (buscarAli) params.set("buscarAli", buscarAli);
-        const qs = params.toString();
-        return res.redirect(303, "/admin/backoffice" + (qs ? "?" + qs : ""));
-    },
-
-    ventasGet: async (req, res) => {
-        try {
-            const paginas = leerPaginas(req);
-            sincronizarBusqueda(paginas, "buscarVen", req.query.buscarVen, "Ven");
-            sincronizarBusqueda(paginas, "buscarFechaVen", req.query.buscarFechaVen, "Ven");
-            guardarPaginas(res, paginas);
-
-            const datos = await obtenerDatosVentas(req.query, paginas);
-            paginas.Ven = datos.pagVen.numPagina || 1;
-            guardarPaginas(res, paginas);
-            return res.render("admin/ventas", {
-                ventaProductos: datos.ventaProductos,
-                pagVen: datos.pagVen,
-                buscarVen: datos.buscarVen,
-                buscarFechaVen: datos.buscarFechaVen
-            });
-        } catch (err) {
-            console.error("Error en ventas:", err);
-            return redirigirBackoffice(res, "error", "No se pudieron cargar las ventas");
-        }
-    },
-
-    ventasPaginaPost: (req, res) => {
-        const { pagDir, buscarVen, buscarFechaVen } = req.body;
-
-        if (pagDir === "sig" || pagDir === "ant") {
-            const paginas = leerPaginas(req);
-            moverPagina(paginas, "Ven", pagDir);
-            guardarPaginas(res, paginas);
-        }
-
-        const params = new URLSearchParams();
-        if (buscarVen) params.set("buscarVen", buscarVen);
-        if (buscarFechaVen) params.set("buscarFechaVen", buscarFechaVen);
-        const qs = params.toString();
-        return res.redirect(303, "/admin/ventas" + (qs ? "?" + qs : ""));
+    ventasGet: (req, res) => {
+        return res.render("admin/ventas");
     },
 
 
