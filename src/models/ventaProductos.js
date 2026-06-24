@@ -23,6 +23,8 @@ const VentaProductos = sequelize.define(
 
     cantidad: { type: DataTypes.INTEGER, allowNull: false },
 
+    precio_unitario: { type: DataTypes.DECIMAL(12, 2), allowNull: false },
+
     precio_total: { type: DataTypes.DECIMAL(12, 2), allowNull: false }
   },
   {

@@ -179,6 +179,18 @@ button:hover {
     gap: 10px;
     width: 100%;
     justify-content: space-between;
+    align-items: center;
+}
+
+.productoCantidad {
+    min-width: 28px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.productoCantidad:empty {
+    display: none;
 }
 
 .productoBtn {

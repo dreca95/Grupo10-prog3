@@ -13,6 +13,8 @@
         });
       })()
     : [];
+  const conFecha = typeof nombreCampoFecha !== "undefined" && nombreCampoFecha;
+  const hayBusqueda = valor || (conFecha && valorFecha);
 %>
 <form method="GET" action="<%= actionUrl %>" class="backofficeBusquedaSeccion">
     <label for="<%= idInput %>"><%= labelText %></label>
@@ -25,12 +27,32 @@
             placeholder="<%= placeholder %>"
             autocomplete="off"
         />
-        <button type="submit" class="buscarBtn">Buscar</button>
-        <% if (valor) { %>
-            <a href="<%= urlLimpiar %>" class="limpiarBusquedaBtn">Limpiar</a>
+        <% if (!conFecha) { %>
+            <button type="submit" class="buscarBtn">Buscar</button>
+            <% if (valor) { %>
+                <a href="<%= urlLimpiar %>" class="limpiarBusquedaBtn">Limpiar</a>
+            <% } %>
         <% } %>
     </div>
+    <% if (conFecha) { %>
+        <label for="<%= idInputFecha %>"><%= labelTextFecha %></label>
+        <div class="backofficeBusquedaFila">
+            <input
+                type="date"
+                id="<%= idInputFecha %>"
+                name="<%= nombreCampoFecha %>"
+                value="<%= valorFecha || '' %>"
+            />
+        </div>
+        <div class="backofficeBusquedaFila">
+            <button type="submit" class="buscarBtn">Buscar</button>
+            <% if (hayBusqueda) { %>
+                <a href="<%= urlLimpiar %>" class="limpiarBusquedaBtn">Limpiar</a>
+            <% } %>
+        </div>
+    <% } %>
     <% ocultos.forEach(function (campo) { %>
         <input type="hidden" name="<%= campo.name %>" value="<%= campo.value %>" />
     <% }) %>
 </form>
+

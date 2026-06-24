@@ -74,8 +74,10 @@ const adminController = {
         try {
             const datos = await obtenerDatosVentas(req.query);
             return res.render("admin/ventas", {
-                ventas: datos.ventas,
-                pagVen: datos.pagVen
+                ventaProductos: datos.ventaProductos,
+                pagVen: datos.pagVen,
+                buscarVen: datos.buscarVen,
+                buscarFechaVen: datos.buscarFechaVen
             });
         } catch (err) {
             console.error("Error en ventas:", err);

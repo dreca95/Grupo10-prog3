@@ -97,6 +97,13 @@ function getTotalPrice() {
   );
 }
 
+function getItemQuantity(tipo, id) {
+  const cart = loadCart();
+  const k = keyOf(tipo, id);
+  const existing = cart.items.find((x) => keyOf(x.tipo, x.id) === k);
+  return existing ? Number(existing.cantidad) || 0 : 0;
+}
+
 // Badge en header (#cartCount)
 function updateCartBadge() {
   const el = document.getElementById("cartCount");
@@ -116,5 +123,6 @@ window.__cart = {
   clearCart,
   getTotalCount,
   getTotalPrice,
+  getItemQuantity,
   updateCartBadge
 };

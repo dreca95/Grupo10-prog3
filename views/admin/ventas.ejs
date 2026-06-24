@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Ventas - Mascotero</title>
+    <title>Venta productos - Mascotero</title>
     <link rel="stylesheet" href="/css/estilos.css">
     <%- include('../partials/head') %>
 </head>
@@ -15,47 +15,74 @@
         <div class="backofficeContainer">
             <div class="ventasEncabezado">
                 <button type="button" class="volverBtn" onclick="window.location.href='/admin/backoffice'">Volver al backoffice</button>
-                <h2>Ventas</h2>
+                <h2>Venta productos</h2>
             </div>
 
             <% if (!pagVen.totalInventario) { %>
-                <p>No hay ventas registradas.</p>
+                <p>No hay registros en venta productos.</p>
             <% } else { %>
-                <div class="ventasTabla">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Cliente</th>
-                                <th>Productos</th>
-                                <th>Cantidad</th>
-                                <th>Total</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% ventas.forEach(v => { %>
-                                <tr>
-                                    <td><%= v.id %></td>
-                                    <td><%= v.cliente %></td>
-                                    <td><%= v.descripcion %></td>
-                                    <td><%= v.cantidad %></td>
-                                    <td><%= v.precioFormateado %></td>
-                                    <td><%= new Date(v.fecha).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires" }) %></td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-                <%- include('../partials/paginacionVentas', {
-                    hayAnterior: pagVen.hayAnterior,
-                    haySiguiente: pagVen.haySiguiente,
-                    numPagina: pagVen.numPagina,
-                    antPrimera: pagVen.antPrimera,
-                    antUltima: pagVen.antUltima,
-                    sigPrimera: pagVen.sigPrimera,
-                    sigUltima: pagVen.sigUltima
+                <div class="ventasBusqueda">
+                <%- include('../partials/busquedaSeccionAdmin', {
+                    actionUrl: "/admin/ventas",
+                    idInput: "buscarVenInput",
+                    nombreCampo: "buscarVen",
+                    valor: buscarVen,
+                    labelText: "Buscar por descripción o ID",
+                    placeholder: "Nombre del producto o ID del producto",
+                    idInputFecha: "buscarFechaVenInput",
+                    nombreCampoFecha: "buscarFechaVen",
+                    valorFecha: buscarFechaVen,
+                    labelTextFecha: "Buscar por fecha",
+                    urlLimpiar: "/admin/ventas"
                 }) %>
+                </div>
+                <% if (!pagVen.total) { %>
+                    <p class="sinCoincidenciasBusqueda">No hay coincidencias.</p>
+                <% } else { %>
+                    <div class="ventasTabla">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ID Venta</th>
+                                    <th>ID Accesorio</th>
+                                    <th>ID Alimento</th>
+                                    <th>Descripción</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio unitario</th>
+                                    <th>Precio total</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% ventaProductos.forEach(vp => { %>
+                                    <tr>
+                                        <td><%= vp.id %></td>
+                                        <td><%= vp.id_venta %></td>
+                                        <td><%= vp.id_accesorio ?? "-" %></td>
+                                        <td><%= vp.id_alimento ?? "-" %></td>
+                                        <td><%= vp.descripcion %></td>
+                                        <td><%= vp.cantidad %></td>
+                                        <td><%= vp.precioUnitarioFormateado %></td>
+                                        <td><%= vp.precioFormateado %></td>
+                                        <td><%= vp.fechaFormateada %></td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <%- include('../partials/paginacionVentas', {
+                        buscarVen: buscarVen,
+                        buscarFechaVen: buscarFechaVen,
+                        hayAnterior: pagVen.hayAnterior,
+                        haySiguiente: pagVen.haySiguiente,
+                        numPagina: pagVen.numPagina,
+                        antPrimera: pagVen.antPrimera,
+                        antUltima: pagVen.antUltima,
+                        sigPrimera: pagVen.sigPrimera,
+                        sigUltima: pagVen.sigUltima
+                    }) %>
+                <% } %>
             <% } %>
         </div>
 

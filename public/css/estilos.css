@@ -535,6 +535,32 @@ button:hover {
     padding: 16px 0;
 }
 
+.ventasBusqueda .backofficeBusquedaFila {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+}
+
+.ventasBusqueda .backofficeBusquedaSeccion input[type="search"] {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.ventasBusqueda .backofficeBusquedaSeccion input[type="date"] {
+    width: 100%;
+    margin-bottom: 0;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.ventasBusqueda .backofficeBusquedaSeccion .buscarBtn,
+.ventasBusqueda .backofficeBusquedaSeccion .limpiarBusquedaBtn {
+    width: 100%;
+    margin-top: 0;
+}
+
 .backofficeAcciones .agregarBtn,
 .backofficeAcciones .verVentasBtn,
 .backofficeAcciones .logoutBtn {

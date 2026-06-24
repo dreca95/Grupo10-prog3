@@ -1,6 +1,13 @@
 <%
   function urlPagina(primera, ultima) {
-    return "/admin/ventas?primeraVen=" + primera + "&ultimaVen=" + ultima;
+    let url = "/admin/ventas?primeraVen=" + primera + "&ultimaVen=" + ultima;
+    if (buscarVen) {
+      url += "&buscarVen=" + encodeURIComponent(buscarVen);
+    }
+    if (buscarFechaVen) {
+      url += "&buscarFechaVen=" + encodeURIComponent(buscarFechaVen);
+    }
+    return url;
   }
 %>
 <div class="pagination">

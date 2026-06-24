@@ -45,18 +45,34 @@ function crearPaginadorCatalogo({
         siguiente.classList.toggle("disabled", ultima >= lista.length);
     }
 
+    function setCantidadVisible(cantidadEl, cantidad) {
+        cantidadEl.textContent = cantidad > 0 ? String(cantidad) : "";
+    }
+
+    function actualizarCantidadEnCards() {
+        grid.querySelectorAll(".productoCard[data-producto-id]").forEach((card) => {
+            const id = Number(card.dataset.productoId);
+            const cantidadEl = card.querySelector(".productoCantidad");
+            if (cantidadEl && id) {
+                setCantidadVisible(cantidadEl, __cart.getItemQuantity(tipo, id));
+            }
+        });
+    }
+
     function renderizarCard(prod) {
         const id = Number(prod.id ?? prod.ID ?? prod.Id);
         const nombre = prod.nombre;
         const precioNumero = __utils.ConvertirTextoMoneyANumero(prod.precio);
         const precioTexto = __utils.FormatearNumeroAPrecio(prod.precio);
         const descripcion = prod.descripcion ?? "";
+        const cantidad = __cart.getItemQuantity(tipo, id);
         const imagenHtml = prod.imagen
             ? `<img src="${prod.imagen}" alt="${nombre}" onerror="this.onerror=null;this.src='/client/img/error.png';">`
             : `<div class="sinImagenProducto">Sin imagen</div>`;
 
         const card = document.createElement("div");
         card.className = "productoCard";
+        card.dataset.productoId = id;
         card.innerHTML = `
             <div class="productoImagen">${imagenHtml}</div>
             <div class="productoInfo">
@@ -65,6 +81,7 @@ function crearPaginadorCatalogo({
                 <p><strong>Descripción:</strong> ${descripcion}</p>
                 <div class="productoActions">
                     <button type="button" class="productoBtn editarBtn" data-action="add">+</button>
+                    <span class="productoCantidad">${cantidad > 0 ? cantidad : ""}</span>
                     <button type="button" class="productoBtn eliminarBtn" data-action="remove">-</button>
                 </div>
             </div>
@@ -80,11 +97,13 @@ function crearPaginadorCatalogo({
                 descripcion,
                 img: prod.imagen || null
             });
+            actualizarCantidadEnCards();
         });
 
         card.querySelector('[data-action="remove"]').addEventListener("click", () => {
             if (!id) return;
             __cart.removeItem(tipo, id);
+            actualizarCantidadEnCards();
         });
 
         return card;
@@ -215,6 +234,8 @@ function crearPaginadorCatalogo({
     });
 
     btnLimpiar.addEventListener("click", limpiarBusqueda);
+
+    window.addEventListener("cart:updated", actualizarCantidadEnCards);
 
     return { cargarProductos };
 }

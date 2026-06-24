@@ -162,6 +162,7 @@ const crearVenta = async (req, res) => {
       id_accesorio: it.tipo === "accesorio" ? it.id : null,
       id_alimento: it.tipo === "alimento" ? it.id : null,
       cantidad: it.cantidad,
+      precio_unitario: it.precio,
       precio_total: it.precio * it.cantidad
     }));
 
