@@ -257,25 +257,224 @@ const descargarTicketPdf = async (req, res) => {
   <html lang="es">
     <head>
       <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
       <style>
-        body { font-family: Arial, sans-serif; padding: 24px; color: #222; }
-        h1 { margin: 0 0 6px 0; }
-        .muted { color: #666; font-size: 12px; margin-bottom: 18px; }
-        .box { border: 1px solid #ddd; border-radius: 8px; padding: 16px; }
-        .row { display: flex; justify-content: space-between; padding: 6px 0; }
-        .total { font-weight: bold; font-size: 16px; border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
+        /* PDF Ticket - Mascotero (Puppeteer) */
+        :root{
+          --bg: #0b1220;
+          --surface: #111a2f;
+          --surface2: #0f172a;
+          --card: #ffffff;
+          --text: #0f172a;
+          --muted: #475569;
+          --border: rgba(15, 23, 42, .14);
+          --accent: #7c3aed;
+          --accent2: #22c55e;
+          --warn: #f59e0b;
+          --shadow: 0 18px 45px rgba(2,6,23,.22);
+        }
+
+        *{ box-sizing: border-box; }
+
+        body{
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+          color: var(--text);
+          padding: 34px 38px;
+          background: #ffffff; /* el resto de la hoja queda blanco */
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        /* Solo la cabecera tiene color, el resto queda blanco */
+        .top{
+          padding: 18px 20px 16px;
+          background:
+            radial-gradient(900px 260px at 0% 0%, rgba(124,58,237,.14), transparent 60%),
+            radial-gradient(900px 260px at 100% 0%, rgba(34,197,94,.10), transparent 60%),
+            linear-gradient(135deg, rgba(124,58,237,.10), rgba(59,130,246,.08));
+          border-bottom: 1px solid rgba(2,6,23,.08);
+        }
+
+        .page{
+          width: 100%;
+        }
+
+        .card{
+          background: var(--card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: var(--shadow);
+        }
+
+        .brandRow{
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .brand{
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        h1{
+          margin: 0;
+          font-size: 28px;
+          letter-spacing: .6px;
+          line-height: 1.1;
+        }
+
+        .subtitle{
+          margin: 0;
+          color: var(--muted);
+          font-size: 13px;
+        }
+
+        .badges{
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+        }
+
+        .badge{
+          font-size: 12px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          border: 1px solid rgba(2,6,23,.10);
+          background: rgba(255,255,255,.7);
+          color: rgba(2,6,23,.78);
+          white-space: nowrap;
+        }
+
+        .badge strong{ color: rgba(2,6,23,.92); }
+
+        .content{
+          padding: 18px 20px 8px;
+        }
+
+        .row{
+          display: grid;
+          grid-template-columns: 180px 1fr;
+          gap: 12px;
+          padding: 10px 12px;
+          border-bottom: 1px dashed rgba(2,6,23,.12);
+          align-items: start;
+        }
+
+        .row:last-child{ border-bottom: 0; }
+
+        .k{
+          color: rgba(2,6,23,.70);
+          font-weight: 700;
+          letter-spacing: .2px;
+        }
+
+        .v{
+          text-align: right;
+          color: rgba(2,6,23,.92);
+          word-break: break-word;
+        }
+
+        .totalRow{
+          margin-top: 12px;
+          border-top: 1px solid rgba(2,6,23,.10);
+          padding-top: 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .totalLabel{
+          font-size: 13px;
+          color: rgba(2,6,23,.70);
+          font-weight: 700;
+        }
+
+        .totalValue{
+          font-size: 18px;
+          font-weight: 900;
+          color: #111827;
+        }
+
+        .footer{
+          padding: 14px 20px 18px;
+          border-top: 1px solid rgba(2,6,23,.08);
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 14px;
+        }
+
+        .note{
+          margin: 0;
+          font-size: 12px;
+          color: rgba(2,6,23,.62);
+          max-width: 520px;
+          line-height: 1.35;
+        }
+
+        .meta{
+          text-align: right;
+          font-size: 11px;
+          color: rgba(2,6,23,.55);
+        }
+
+        @page { margin: 18mm; }
       </style>
     </head>
     <body>
-      <h1>MASCOTERO</h1>
-      <div class="muted">Ticket de compra</div>
+      <div class="page">
+        <div class="card">
+          <div class="top">
+            <div class="brandRow">
+              <div class="brand">
+                <h1>MASCOTERO</h1>
+                <p class="subtitle">Ticket de compra</p>
+              </div>
 
-      <div class="box">
-        <div class="row"><div><strong>Cliente</strong></div><div>${venta.cliente}</div></div>
-        <div class="row"><div><strong>Fecha</strong></div><div>${formatDateTime(venta.fecha)}</div></div>
-        <div class="row"><div><strong>Productos</strong></div><div style="text-align:right; max-width: 320px;">${venta.descripcion}</div></div>
-        <div class="row"><div><strong>Cantidad total</strong></div><div>${venta.cantidad}</div></div>
-        <div class="row total"><div>Total</div><div>${money(venta.precio)}</div></div>
+              <div class="badges">
+                <span class="badge">Venta: <strong>#${venta.id}</strong></span>
+                <span class="badge">Fecha: <strong>${formatDateTime(venta.fecha)}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="content">
+            <div class="row">
+              <div class="k">Cliente</div>
+              <div class="v">${venta.cliente}</div>
+            </div>
+
+            <div class="row">
+              <div class="k">Productos</div>
+              <div class="v">${venta.descripcion}</div>
+            </div>
+
+            <div class="row">
+              <div class="k">Cantidad total</div>
+              <div class="v">${venta.cantidad}</div>
+            </div>
+
+            <div class="totalRow">
+              <div class="totalLabel">Total</div>
+              <div class="totalValue">${money(venta.precio)}</div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p class="note">
+              Conservá este comprobante. Este PDF fue generado automáticamente por Mascotero.
+            </p>
+            <div class="meta">
+              Generado: ${formatDateTime(new Date())}
+            </div>
+          </div>
+        </div>
       </div>
     </body>
   </html>`;

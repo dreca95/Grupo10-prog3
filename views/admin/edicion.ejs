@@ -52,7 +52,7 @@
                     <% if (producto.imagen) { %>
                         <p class="imagenActual">
                             Imagen actual:
-                            <img src="<%= producto.imagen %>" alt="Imagen del producto" class="previewImagenProducto" />
+                            <img src="<%= producto.imagen %>" alt="Imagen del producto" class="previewImagenProducto" onerror="this.onerror=null; this.src='/img/error.png';" />
                         </p>
                     <% } %>
                     <input id="imagen" name="imagen" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />

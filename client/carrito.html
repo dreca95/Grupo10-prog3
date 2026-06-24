@@ -24,9 +24,11 @@
     </div>
   </div>
 
+
   <script src="/client/js/include.js"></script>
   <script src="/client/js/utils.js"></script>
   <script src="/client/js/cart.js"></script>
+  <script src="/js/modalConfirmacion.js"></script>
   <script>
     if (!__utils.requerirNombreCliente()) {
       throw new Error("redirect");
@@ -87,7 +89,7 @@
           img.alt = it.nombre;
           img.onerror = function () {
             this.onerror = null;
-            this.src = "/client/img/error.png";
+            this.src = "/public/img/error.png";
           };
           thumb.appendChild(img);
         } else {
@@ -181,6 +183,14 @@
       window.location.href = "/client/productos.html";
     });
 
+    function confirmarCompraModal(mensaje) {
+      if (!window.__modalConfirm?.confirm) {
+        console.error("modalConfirmacion.js no cargó: faltó window.__modalConfirm.confirm");
+        return Promise.resolve(false);
+      }
+      return window.__modalConfirm.confirm(mensaje || "¿Confirmás la compra?");
+    }
+
     document.getElementById("btnComprar").addEventListener("click", async () => {
       const cart = __cart.loadCart();
       if (!cart.items.length) {
@@ -193,7 +203,7 @@
         return;
       }
 
-      const ok = confirm("¿Confirmás la compra?");
+      const ok = await confirmarCompraModal("¿Confirmás la compra?");
       if (!ok) return;
 
       const cliente = __utils.obtenerNombreCliente();
